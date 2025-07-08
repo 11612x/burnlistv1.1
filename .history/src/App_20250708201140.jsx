@@ -1,0 +1,43 @@
+// React core and lifecycle
+import React, { useState, useEffect } from "react";
+// React Router for routing
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+// App pages
+import Home from "./pages/HomePage";
+import WatchlistPage from "./pages/WatchlistPage";
+
+function App() {
+  // Load watchlists from localStorage or default to empty array
+  const [watchlists, setWatchlists] = useState(() => {
+    try {
+      const saved = localStorage.getItem("burnlist_watchlists");
+      console.log("Loaded watchlists from localStorage:", saved);
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  // Persist watchlists to localStorage on changes
+  useEffect(() => {
+    console.log("Saving watchlists to localStorage:", watchlists);
+    localStorage.setItem("burnlist_watchlists", JSON.stringify(watchlists));
+  }, [watchlists]);
+
+  return (
+    <Router>
+      <Routes>
+        <Route
+          path="/"
+          element={<Home watchlists={watchlists} setWatchlists={setWatchlists} />}
+        />
+        <Route
+          path="/watchlist/:slug"
+          element={<WatchlistPage watchlists={watchlists} setWatchlists={setWatchlists} />}
+        />
+      </Routes>
+    </Router>
+  );
+}
+
+export default App;
