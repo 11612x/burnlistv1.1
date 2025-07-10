@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { refreshWatchlistData } from '@data/refreshWatchlistData';
+import refreshWatchlistData from "@data/refreshWatchlistData";
 import normalizeTicker from "@data/normalizeTicker";
 import { useParams } from "react-router-dom";
 import WatchlistHeader from "@components/WatchlistHeader";
@@ -50,50 +50,26 @@ const BurnPage = () => {
   }, [slug]);
 
   useEffect(() => {
-    if (!watchlist || !Array.isArray(watchlist.items)) return;
-
-    const key = Object.keys(watchlists).find(k => watchlists[k].slug === slug);
-    if (!key) {
-      console.warn("⚠️ Could not find matching watchlist key for slug during initial refresh");
-      return;
-    }
-
-    (async () => {
-      const updatedItems = await refreshWatchlistData(watchlist.items);
-      if (!updatedItems) {
-        console.warn("⚠️ No updated items returned from refreshWatchlistData");
-        return;
-      }
-
-      const updatedWatchlist = { ...watchlist, items: updatedItems };
-      const updated = { ...watchlists, [key]: updatedWatchlist };
-      handleSetWatchlists(updated);
-    })();
-  }, [slug]); // ✅ Run once on load only
-
-  // Auto-refresh every 60 seconds if there are real tickers
-  useEffect(() => {
-    const interval = setInterval(async () => {
+    async function refresh() {
       if (!watchlist || !Array.isArray(watchlist.items)) return;
-      const hasRealTickers = watchlist.items.some(t => !t.isMock);
-      if (!hasRealTickers) return;
 
-      console.log("🔁 Auto-refreshing watchlist data...");
       const updatedItems = await refreshWatchlistData(watchlist.items);
       const updatedWatchlist = { ...watchlist, items: updatedItems };
 
+      // Find the key and update full watchlists state
       const key = Object.keys(watchlists).find(k => watchlists[k].slug === slug);
       if (!key) {
-        console.warn("⚠️ Could not find watchlist key during auto-refresh");
+        console.warn("⚠️ Could not find watchlist key to update refreshed data");
         return;
       }
 
       const updated = { ...watchlists, [key]: updatedWatchlist };
+      console.log("♻️ Refreshed watchlist data:", updated);
       handleSetWatchlists(updated);
-    }, 60000); // 60 seconds HERE IS HOW OFTEN TO REFRESH
+    }
 
-    return () => clearInterval(interval);
-  }, [watchlist, watchlists, slug]);
+    refresh();
+  }, [watchlist]);
 
   const handleSetWatchlists = (updatedLists) => {
     console.log("🔍 handleSetWatchlists input:", updatedLists);

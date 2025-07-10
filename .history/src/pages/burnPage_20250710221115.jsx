@@ -50,26 +50,27 @@ const BurnPage = () => {
   }, [slug]);
 
   useEffect(() => {
-    if (!watchlist || !Array.isArray(watchlist.items)) return;
+    async function refresh() {
+      if (!watchlist || !Array.isArray(watchlist.items)) return;
 
-    const key = Object.keys(watchlists).find(k => watchlists[k].slug === slug);
-    if (!key) {
-      console.warn("⚠️ Could not find matching watchlist key for slug during initial refresh");
-      return;
-    }
-
-    (async () => {
       const updatedItems = await refreshWatchlistData(watchlist.items);
-      if (!updatedItems) {
-        console.warn("⚠️ No updated items returned from refreshWatchlistData");
+      const updatedWatchlist = { ...watchlist, items: updatedItems };
+
+      // Find the key and update full watchlists state
+      const key = Object.keys(watchlists).find(k => watchlists[k].slug === slug);
+      if (!key) {
+        console.warn("⚠️ Could not find watchlist key to update refreshed data");
         return;
       }
 
-      const updatedWatchlist = { ...watchlist, items: updatedItems };
       const updated = { ...watchlists, [key]: updatedWatchlist };
+      localStorage.setItem("burnlist_watchlists", JSON.stringify(updated));
+      console.log("♻️ Refreshed watchlist data:", updated);
       handleSetWatchlists(updated);
-    })();
-  }, [slug]); // ✅ Run once on load only
+    }
+
+    refresh();
+  }, [watchlist]);
 
   // Auto-refresh every 60 seconds if there are real tickers
   useEffect(() => {

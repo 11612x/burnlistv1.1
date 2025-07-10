@@ -13,18 +13,18 @@ const WatchlistHeader = ({ name, averageReturn, selected, setWatchlists }) => {
   const [watchlistName, setWatchlistName] = useState("");
   const { slug } = useParams();
 
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
   const handleRefresh = async () => {
     try {
-      setIsRefreshing(true);
       const stored = JSON.parse(localStorage.getItem("burnlist_watchlists"));
       const index = stored.findIndex((wl) => wl.slug === slug);
       if (index === -1) return;
 
       const original = stored[index];
       const updatedItems = await refreshWatchlistData(original.items || []);
-      stored[index].items = updatedItems;
+      stored[index] = {
+        ...original,
+        items: updatedItems
+      };
 
       console.log("🔄 Refreshed watchlist data:", stored[index]);
 
@@ -32,8 +32,6 @@ const WatchlistHeader = ({ name, averageReturn, selected, setWatchlists }) => {
       setWatchlists(stored);
     } catch (err) {
       console.warn("❌ Failed to refresh data:", err);
-    } finally {
-      setIsRefreshing(false);
     }
   };
 
@@ -105,22 +103,17 @@ const WatchlistHeader = ({ name, averageReturn, selected, setWatchlists }) => {
         >
           {returnPercent !== null ? `${returnPercent.toFixed(2)}%` : "–%"} ({selected?.toUpperCase() || "N/A"})
         </div>
-        <button
-          onClick={handleRefresh}
-          disabled={isRefreshing}
-          style={{
-            marginTop: "0.5rem",
-            fontSize: "0.8rem",
-            color: "rgb(127, 186, 161)",
-            background: "transparent",
-            border: "1px solid rgb(127, 186, 161)",
-            padding: "2px 6px",
-            cursor: isRefreshing ? "not-allowed" : "pointer",
-            opacity: isRefreshing ? 0.5 : 1,
-            fontFamily: "'Courier New', Courier, monospace"
-          }}
-        >
-          {isRefreshing ? "Refreshing..." : "⟳ Refresh Prices"}
+        <button onClick={handleRefresh} style={{
+          marginTop: "0.5rem",
+          fontSize: "0.8rem",
+          color: "rgb(127, 186, 161)",
+          background: "transparent",
+          border: "1px solid rgb(127, 186, 161)",
+          padding: "2px 6px",
+          cursor: "pointer",
+          fontFamily: "'Courier New', Courier, monospace"
+        }}>
+          ⟳ Refresh Prices
         </button>
       </div>
     </div>

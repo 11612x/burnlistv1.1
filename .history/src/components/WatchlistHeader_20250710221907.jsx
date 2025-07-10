@@ -24,7 +24,10 @@ const WatchlistHeader = ({ name, averageReturn, selected, setWatchlists }) => {
 
       const original = stored[index];
       const updatedItems = await refreshWatchlistData(original.items || []);
-      stored[index].items = updatedItems;
+      stored[index] = {
+        ...original,
+        items: updatedItems
+      };
 
       console.log("🔄 Refreshed watchlist data:", stored[index]);
 
