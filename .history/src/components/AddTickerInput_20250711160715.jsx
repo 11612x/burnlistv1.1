@@ -138,7 +138,7 @@ const AddTickerInput = ({ bulkSymbols, setBulkSymbols, handleBulkAdd, buyDate, s
 
       if (newItems.length === 0) {
         if (setNotification && setNotificationType) {
-          setNotification('No valid tickers were added, check your input');
+          setNotification('No valid tickers were created. Please check your input.');
           setNotificationType('error');
         }
         return;

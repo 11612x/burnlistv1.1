@@ -22,10 +22,17 @@ const NotificationBanner = ({ message, type = 'info', onClose }) => {
         position: 'relative',
         marginBottom: 8,
         cursor: onClose ? 'pointer' : 'default',
+        transition: 'background 0.15s',
         userSelect: 'none',
         opacity: 1,
       }}
       onClick={onClose}
+      onMouseOver={e => {
+        if (onClose) e.currentTarget.style.background = '#333';
+      }}
+      onMouseOut={e => {
+        if (onClose) e.currentTarget.style.background = style.background;
+      }}
       aria-label={onClose ? 'Dismiss notification' : undefined}
       tabIndex={onClose ? 0 : undefined}
       role="alert"

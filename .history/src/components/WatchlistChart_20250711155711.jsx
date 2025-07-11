@@ -70,9 +70,8 @@ const WatchlistChart = ({ portfolioReturnData, height = 300, showTooltip = true,
     return points;
   }, [portfolioReturnData, mini]);
 
-  // If no data, show empty chart or nothing if suppressed
-  if (!chartData || chartData.length === 0) {
-    if (suppressEmptyMessage) return null;
+  // If no data, show empty chart
+  if ((!chartData || chartData.length === 0) && !suppressEmptyMessage) {
     return (
       <div style={{ textAlign: "center", padding: 40, color: CRT_GREEN, fontFamily: "'Courier New'", background: '#000' }}>
         No valid data to display yet.

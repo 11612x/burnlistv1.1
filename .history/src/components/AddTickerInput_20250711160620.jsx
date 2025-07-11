@@ -82,7 +82,7 @@ const AddTickerInput = ({ bulkSymbols, setBulkSymbols, handleBulkAdd, buyDate, s
       const duplicateInput = validSymbols.find(sym => existingSymbols.has(sym));
       if (duplicateInput) {
         if (setNotification && setNotificationType) {
-          setNotification(`Ticker '${duplicateInput}' already exists in this watchlist`);
+          setNotification(`Ticker '${duplicateInput}' already exists in this watchlist.`);
           setNotificationType('error');
         }
         setIsLoading(false);
@@ -138,7 +138,7 @@ const AddTickerInput = ({ bulkSymbols, setBulkSymbols, handleBulkAdd, buyDate, s
 
       if (newItems.length === 0) {
         if (setNotification && setNotificationType) {
-          setNotification('No valid tickers were added, check your input');
+          setNotification('No valid tickers were created. Please check your input.');
           setNotificationType('error');
         }
         return;

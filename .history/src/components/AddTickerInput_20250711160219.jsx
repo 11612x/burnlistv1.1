@@ -6,7 +6,7 @@ import CustomButton from '@components/CustomButton';
 
 const CRT_GREEN = 'rgb(140,185,162)';
 
-const AddTickerInput = ({ bulkSymbols, setBulkSymbols, handleBulkAdd, buyDate, setBuyDate, buyPrice, setBuyPrice, setWatchlists, editMode, watchlists, setNotification, setNotificationType }) => {
+const AddTickerInput = ({ bulkSymbols, setBulkSymbols, handleBulkAdd, buyDate, setBuyDate, buyPrice, setBuyPrice, setWatchlists, editMode, watchlists }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [validationError, setValidationError] = useState('');
@@ -15,9 +15,10 @@ const AddTickerInput = ({ bulkSymbols, setBulkSymbols, handleBulkAdd, buyDate, s
 
   const validateInputs = () => {
     if (!bulkSymbols.trim()) {
-      setValidationError('');
+      setValidationError(''); // Do not show any message for empty input
       return false;
     }
+    // Accept comma, space, or both as delimiters
     const symbols = bulkSymbols
       .split(/[,	\s]+/)
       .map(sym => sym.trim().toUpperCase())
@@ -45,15 +46,6 @@ const AddTickerInput = ({ bulkSymbols, setBulkSymbols, handleBulkAdd, buyDate, s
     return true;
   };
 
-  useEffect(() => {
-    if (validationError) {
-      if (setNotification && setNotificationType) {
-        setNotification(validationError);
-        setNotificationType('error');
-      }
-    }
-  }, [validationError, setNotification, setNotificationType]);
-
   // Debounce validation on bulkSymbols change
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -69,29 +61,22 @@ const AddTickerInput = ({ bulkSymbols, setBulkSymbols, handleBulkAdd, buyDate, s
   const handleAddTickers = async () => {
     setTouched(true);
     if (!validateInputs()) return;
+
     setIsLoading(true);
     setError('');
-    try {
-      // Accept comma, space, or both as delimiters
-      const rawSymbols = bulkSymbols.split(/[,\s]+/).map((sym) => sym.trim().toUpperCase()).filter(Boolean);
-      const validSymbols = rawSymbols.filter(isValidTicker);
-      const slugMatch = window.location.pathname.split("/").pop();
-      const existingItems = watchlists && Object.values(watchlists).find(w => w.slug === slugMatch)?.items || [];
-      const existingSymbols = new Set(existingItems.map(i => i.symbol));
-      // Check for duplicates in input
-      const duplicateInput = validSymbols.find(sym => existingSymbols.has(sym));
-      if (duplicateInput) {
-        if (setNotification && setNotificationType) {
-          setNotification(`Ticker '${duplicateInput}' already exists in this watchlist`);
-          setNotificationType('error');
-        }
-        setIsLoading(false);
-        return;
-      }
 
+    try {
       console.log("📦 Adding Tickers:", bulkSymbols);
       console.log("📅 With Buy Date:", buyDate);
       console.log("💵 With Buy Price:", buyPrice);
+
+      // Accept comma, space, or both as delimiters
+      const rawSymbols = bulkSymbols.split(/[,\s]+/).map((sym) => sym.trim().toUpperCase()).filter(Boolean);
+      const validSymbols = rawSymbols.filter(isValidTicker);
+
+      const slugMatch = window.location.pathname.split("/").pop();
+      const existingItems = watchlists && Object.values(watchlists).find(w => w.slug === slugMatch)?.items || [];
+      const existingSymbols = new Set(existingItems.map(i => i.symbol));
 
       const newItems = [];
       for (const rawSymbol of validSymbols) {
@@ -137,10 +122,7 @@ const AddTickerInput = ({ bulkSymbols, setBulkSymbols, handleBulkAdd, buyDate, s
       }
 
       if (newItems.length === 0) {
-        if (setNotification && setNotificationType) {
-          setNotification('No valid tickers were added, check your input');
-          setNotificationType('error');
-        }
+        setError('No valid tickers were created. Please check your input');
         return;
         
       }
@@ -198,10 +180,8 @@ const AddTickerInput = ({ bulkSymbols, setBulkSymbols, handleBulkAdd, buyDate, s
       setBuyDate(null);
 
     } catch (error) {
-      if (setNotification && setNotificationType) {
-        setNotification('Failed to add tickers. Please try again.');
-        setNotificationType('error');
-      }
+      console.error('❌ Error adding tickers:', error);
+      setError('Failed to add tickers. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -209,6 +189,19 @@ const AddTickerInput = ({ bulkSymbols, setBulkSymbols, handleBulkAdd, buyDate, s
 
   return (
     <div style={{ marginTop: 20 }}>
+      {/* Error and validation notifications */}
+      {(error || validationError) && (
+        <div style={{ width: '100%', display: 'block' }}>
+          <NotificationBanner
+            message={error || validationError}
+            type="error"
+            onClose={() => {
+              setError('');
+              setValidationError('');
+            }}
+          />
+        </div>
+      )}
       <div style={{ display: "flex", alignItems: "center", width: '100%' }}>
         <textarea
           value={bulkSymbols}

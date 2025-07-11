@@ -69,29 +69,22 @@ const AddTickerInput = ({ bulkSymbols, setBulkSymbols, handleBulkAdd, buyDate, s
   const handleAddTickers = async () => {
     setTouched(true);
     if (!validateInputs()) return;
+
     setIsLoading(true);
     setError('');
-    try {
-      // Accept comma, space, or both as delimiters
-      const rawSymbols = bulkSymbols.split(/[,\s]+/).map((sym) => sym.trim().toUpperCase()).filter(Boolean);
-      const validSymbols = rawSymbols.filter(isValidTicker);
-      const slugMatch = window.location.pathname.split("/").pop();
-      const existingItems = watchlists && Object.values(watchlists).find(w => w.slug === slugMatch)?.items || [];
-      const existingSymbols = new Set(existingItems.map(i => i.symbol));
-      // Check for duplicates in input
-      const duplicateInput = validSymbols.find(sym => existingSymbols.has(sym));
-      if (duplicateInput) {
-        if (setNotification && setNotificationType) {
-          setNotification(`Ticker '${duplicateInput}' already exists in this watchlist`);
-          setNotificationType('error');
-        }
-        setIsLoading(false);
-        return;
-      }
 
+    try {
       console.log("📦 Adding Tickers:", bulkSymbols);
       console.log("📅 With Buy Date:", buyDate);
       console.log("💵 With Buy Price:", buyPrice);
+
+      // Accept comma, space, or both as delimiters
+      const rawSymbols = bulkSymbols.split(/[,\s]+/).map((sym) => sym.trim().toUpperCase()).filter(Boolean);
+      const validSymbols = rawSymbols.filter(isValidTicker);
+
+      const slugMatch = window.location.pathname.split("/").pop();
+      const existingItems = watchlists && Object.values(watchlists).find(w => w.slug === slugMatch)?.items || [];
+      const existingSymbols = new Set(existingItems.map(i => i.symbol));
 
       const newItems = [];
       for (const rawSymbol of validSymbols) {
@@ -138,7 +131,7 @@ const AddTickerInput = ({ bulkSymbols, setBulkSymbols, handleBulkAdd, buyDate, s
 
       if (newItems.length === 0) {
         if (setNotification && setNotificationType) {
-          setNotification('No valid tickers were added, check your input');
+          setNotification('No valid tickers were created. Please check your input.');
           setNotificationType('error');
         }
         return;

@@ -101,7 +101,7 @@ const HomePage = ({ watchlists = {}, setWatchlists }) => {
     // Check if name already exists (case-insensitive)
     const exists = Object.values(watchlists).some(w => w.name && w.name.toLowerCase() === name.toLowerCase());
     if (exists) {
-      setNotification('⚠️ Name already exists');
+      setNotification('⚠️ Name already exists. Try again.');
       setNotificationType('error');
       return;
     }
@@ -142,7 +142,7 @@ const HomePage = ({ watchlists = {}, setWatchlists }) => {
     // Prevent duplicate names (case-insensitive, except for current)
     const duplicate = Object.values(watchlists).some(w => w.id !== id && w.name && w.name.toLowerCase() === newName.toLowerCase());
     if (duplicate) {
-      setNotification('⚠️ Name already exists');
+      setNotification('⚠️ Name already exists. Try again.');
       setNotificationType('error');
       return;
     }
@@ -172,55 +172,6 @@ const HomePage = ({ watchlists = {}, setWatchlists }) => {
     setWatchlists(updated);
     localStorage.setItem('burnlist_watchlists', JSON.stringify(updated));
   }, [setWatchlists, watchlists]);
-
-  // Track editing state and previous name for each watchlist
-  const [editingNames, setEditingNames] = useState({}); // { [id]: { value, prev } }
-
-  // When entering edit mode, initialize editingNames
-  useEffect(() => {
-    if (editMode) {
-      const initial = {};
-      Object.values(watchlists).forEach(wl => {
-        initial[wl.id] = { value: wl.name, prev: wl.name };
-      });
-      setEditingNames(initial);
-    } else {
-      setEditingNames({});
-    }
-  }, [editMode, watchlists]);
-
-  // Handler for input change (just update local state)
-  const handleEditNameInput = (id, value) => {
-    setEditingNames(prev => ({ ...prev, [id]: { ...prev[id], value } }));
-  };
-
-  // Handler for blur or 'Done' (validate and commit)
-  const commitEditName = (id) => {
-    const newName = editingNames[id]?.value || '';
-    // Prevent duplicate names (case-insensitive, except for current)
-    const duplicate = Object.values(watchlists).some(w => w.id !== id && w.name && w.name.toLowerCase() === newName.toLowerCase());
-    if (duplicate) {
-      setNotification('⚠️ Name already exists');
-      setNotificationType('error');
-      // Revert to previous name
-      setEditingNames(prev => ({ ...prev, [id]: { ...prev[id], value: prev[id].prev } }));
-      return;
-    }
-    // Commit the name change
-    setWatchlists((prev) => {
-      const updated = { ...prev };
-      if (updated[id]) {
-        updated[id] = { ...updated[id], name: newName, slug: slugify(newName) };
-        if (typeof newName === 'string' && newName.startsWith('!')) {
-          const mock = generateFixedMockWatchlist({ numTickers: 4, days: 130 });
-          updated[id].items = mock.items;
-        }
-      }
-      localStorage.setItem('burnlist_watchlists', JSON.stringify(updated));
-      return updated;
-    });
-    setEditingNames(prev => ({ ...prev, [id]: { ...prev[id], prev: newName } }));
-  };
 
   const sortedWatchlists = useMemo(() => Object.values(watchlists), [watchlists]);
   // Memoize lastReturn for each watchlist
@@ -418,19 +369,12 @@ const HomePage = ({ watchlists = {}, setWatchlists }) => {
             {/* Name (editable) */}
             {editMode ? (
               <input
-                value={editingNames[item.id]?.value ?? item.name}
-                onChange={e => handleEditNameInput(item.id, e.target.value)}
-                onBlur={() => commitEditName(item.id)}
-                onKeyDown={e => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    commitEditName(item.id);
-                  }
-                }}
-                style={{
-                  fontFamily: 'Courier New',
+                  value={item.name}
+                onChange={e => handleUpdateWatchlistName(item.id, e.target.value)}
+                  style={{
+                    fontFamily: 'Courier New',
                   fontSize: 18,
-                  color: CRT_GREEN,
+                    color: CRT_GREEN,
                   background: 'black',
                   border: '1px solid #333',
                   marginBottom: 4,
@@ -440,8 +384,8 @@ const HomePage = ({ watchlists = {}, setWatchlists }) => {
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
-                }}
-              />
+                  }}
+                />
             ) : (
               <div style={{ fontSize: 18, color: CRT_GREEN, fontWeight: 'bold', marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {item.name || `PORTFOLIO ${idx + 1}`}

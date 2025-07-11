@@ -200,7 +200,7 @@ const HomePage = ({ watchlists = {}, setWatchlists }) => {
     // Prevent duplicate names (case-insensitive, except for current)
     const duplicate = Object.values(watchlists).some(w => w.id !== id && w.name && w.name.toLowerCase() === newName.toLowerCase());
     if (duplicate) {
-      setNotification('⚠️ Name already exists');
+      setNotification('⚠️ Name already exists. Try again.');
       setNotificationType('error');
       // Revert to previous name
       setEditingNames(prev => ({ ...prev, [id]: { ...prev[id], value: prev[id].prev } }));
