@@ -3,6 +3,7 @@ import { createTicker } from '@data/createTicker';
 import { isValidTicker, normalizeSymbol } from '@data/tickerUtils';
 import NotificationBanner from '@components/NotificationBanner';
 import CustomButton from '@components/CustomButton';
+import { useThemeColor } from '../ThemeContext';
 
 const CRT_GREEN = 'rgb(140,185,162)';
 
@@ -12,6 +13,9 @@ const AddTickerInput = ({ bulkSymbols, setBulkSymbols, handleBulkAdd, buyDate, s
   const [validationError, setValidationError] = useState('');
   const [touched, setTouched] = useState(false);
   const debounceRef = useRef();
+
+  const green = useThemeColor(CRT_GREEN);
+  const black = useThemeColor('black');
 
   const validateInputs = () => {
     if (!bulkSymbols.trim()) {
@@ -219,9 +223,9 @@ const AddTickerInput = ({ bulkSymbols, setBulkSymbols, handleBulkAdd, buyDate, s
             flex: 1,
             fontFamily: "'Courier New', Courier, monospace",
             fontSize: "1rem",
-            backgroundColor: "#000000",
-            border: `1px solid ${CRT_GREEN}`,
-            color: CRT_GREEN,
+            backgroundColor: black,
+            border: `1px solid ${green}`,
+            color: green,
             padding: 8,
             resize: "none",
             boxSizing: "border-box",
@@ -250,9 +254,9 @@ const AddTickerInput = ({ bulkSymbols, setBulkSymbols, handleBulkAdd, buyDate, s
               marginLeft: 8,
               fontFamily: "'Courier New', Courier, monospace",
               fontSize: "1rem",
-              backgroundColor: "#000000",
-              border: `1px solid ${CRT_GREEN}`,
-              color: CRT_GREEN,
+              backgroundColor: black,
+              border: `1px solid ${green}`,
+              color: green,
               padding: 8,
               cursor: "pointer",
               minWidth: 0,
@@ -271,9 +275,9 @@ const AddTickerInput = ({ bulkSymbols, setBulkSymbols, handleBulkAdd, buyDate, s
               marginLeft: 8,
               fontFamily: "'Courier New', Courier, monospace",
               fontSize: "1rem",
-              backgroundColor: "#000000",
-              border: `1px solid ${CRT_GREEN}`,
-              color: CRT_GREEN,
+              backgroundColor: black,
+              border: `1px solid ${green}`,
+              color: green,
               padding: 8,
               cursor: "pointer",
               minWidth: 0,
@@ -286,7 +290,7 @@ const AddTickerInput = ({ bulkSymbols, setBulkSymbols, handleBulkAdd, buyDate, s
           title="Add ticker(s)"
           style={{
             marginLeft: 8,
-            backgroundColor: isLoading ? "#666666" : CRT_GREEN,
+            backgroundColor: isLoading ? "#666666" : green,
             color: "black",
             opacity: isLoading ? 0.6 : 1,
             minWidth: 0,

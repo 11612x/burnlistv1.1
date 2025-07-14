@@ -3,6 +3,7 @@ import { useAverageReturn } from "@hooks/useAverageReturn";
 import TickerRow from "@components/TickerRow";
 import { useSortedItems } from "@hooks/useSortedItems";
 import { getReturnInTimeframe } from "@logic/portfolioUtils";
+import { useThemeColor } from '../ThemeContext';
 
 const CRT_GREEN = 'rgb(140,185,162)';
 
@@ -13,8 +14,10 @@ const TickerTable = ({
   handleDelete,
   selectedTimeframe,
 }) => {
+  const green = useThemeColor(CRT_GREEN);
+  const black = useThemeColor('black');
   if (!Array.isArray(items)) {
-    console.warn("⚠️ TickerTable received invalid items prop:", items);
+    console.warn("\u26a0\ufe0f TickerTable received invalid items prop:", items);
     return null;
   }
   // State to keep track of sorting configuration: key and direction
@@ -22,7 +25,7 @@ const TickerTable = ({
 
   // Toggle sort direction or set new key when a header is clicked
   const handleSort = (key) => {
-    console.log(`🧭 handleSort triggered for key: ${key}`);
+    console.log(`\ud83e\udded handleSort triggered for key: ${key}`);
     setSortConfig((prev) => {
       if (prev.key === key) {
         // If the same key is clicked, toggle the direction
@@ -36,7 +39,7 @@ const TickerTable = ({
   // Display sort direction arrow next to the sorted column header
   const renderSortArrow = (key) => {
     if (sortConfig.key !== key) return "";
-    return sortConfig.direction === "asc" ? "↑" : "↓";
+    return sortConfig.direction === "asc" ? "\u2191" : "\u2193";
   };
 
   // Get sorted items based on current sort configuration
@@ -46,7 +49,7 @@ const TickerTable = ({
   const averageReturn = useAverageReturn(sortedItems);
 
   // Debug average return value
-  console.log("📊 Average return from sortedItems:", averageReturn);
+  console.log("\ud83d\udcca Average return from sortedItems:", averageReturn);
 
   // If a global setter function exists, update it with the latest average return
   if (typeof window !== "undefined" && typeof window.setWatchlistAverageReturn === "function") {
@@ -54,31 +57,31 @@ const TickerTable = ({
   }
 
   return (
-    <table style={{ width: "100%", borderCollapse: "collapse", color: CRT_GREEN, background: 'black', fontFamily: 'Courier New', border: `1px solid ${CRT_GREEN}` }}>
+    <table style={{ width: "100%", borderCollapse: "collapse", color: green, background: black, fontFamily: 'Courier New', border: `1px solid ${green}` }}>
       <thead>
-        <tr style={{ borderBottom: `1px solid ${CRT_GREEN}` }}>
+        <tr style={{ borderBottom: `1px solid ${green}` }}>
           {/* Column headers with clickable sorting functionality */}
-          <th onClick={() => handleSort("symbol")} style={{ cursor: "pointer", padding: 8, textAlign: "left", color: CRT_GREEN, borderBottom: `1px solid ${CRT_GREEN}`, fontFamily: 'Courier New', background: 'black' }}>
+          <th onClick={() => handleSort("symbol")} style={{ cursor: "pointer", padding: 8, textAlign: "left", color: green, borderBottom: `1px solid ${green}`, fontFamily: 'Courier New', background: black }}>
             Symbol {renderSortArrow("symbol")}
           </th>
-          <th onClick={() => handleSort("buyPrice")} style={{ cursor: "pointer", padding: 8, textAlign: "left", color: CRT_GREEN, borderBottom: `1px solid ${CRT_GREEN}`, fontFamily: 'Courier New', background: 'black' }}>
+          <th onClick={() => handleSort("buyPrice")} style={{ cursor: "pointer", padding: 8, textAlign: "left", color: green, borderBottom: `1px solid ${green}`, fontFamily: 'Courier New', background: black }}>
             Buy Price {renderSortArrow("buyPrice")}
           </th>
-          <th onClick={() => handleSort("currentPrice")} style={{ cursor: "pointer", padding: 8, textAlign: "left", color: CRT_GREEN, borderBottom: `1px solid ${CRT_GREEN}`, fontFamily: 'Courier New', background: 'black' }}>
+          <th onClick={() => handleSort("currentPrice")} style={{ cursor: "pointer", padding: 8, textAlign: "left", color: green, borderBottom: `1px solid ${green}`, fontFamily: 'Courier New', background: black }}>
             Current Price {renderSortArrow("currentPrice")}
           </th>
-          <th onClick={() => handleSort("changePercent")} style={{ cursor: "pointer", padding: 8, textAlign: "left", color: CRT_GREEN, borderBottom: `1px solid ${CRT_GREEN}`, fontFamily: 'Courier New', background: 'black' }}>
+          <th onClick={() => handleSort("changePercent")} style={{ cursor: "pointer", padding: 8, textAlign: "left", color: green, borderBottom: `1px solid ${green}`, fontFamily: 'Courier New', background: black }}>
             Change % {renderSortArrow("changePercent")}
           </th>
           {/* Show Actions column only if edit mode is enabled */}
-          {editMode && <th style={{ padding: 8, textAlign: "left", color: CRT_GREEN, borderBottom: `1px solid ${CRT_GREEN}`, fontFamily: 'Courier New', background: 'black' }}>Actions</th>}
-          <th style={{ textAlign: "left", color: CRT_GREEN, borderBottom: `1px solid ${CRT_GREEN}`, fontFamily: 'Courier New', background: 'black' }} />
+          {editMode && <th style={{ padding: 8, textAlign: "left", color: green, borderBottom: `1px solid ${green}`, fontFamily: 'Courier New', background: black }}>Actions</th>}
+          <th style={{ textAlign: "left", color: green, borderBottom: `1px solid ${green}`, fontFamily: 'Courier New', background: black }} />
         </tr>
       </thead>
       <tbody>
         {/* Render each sorted item as a TickerRow component */}
         {sortedItems.map((item, index) => {
-          console.log(`🧩 Rendering row for ${item.symbol}`);
+          console.log(`\ud83e\udde9 Rendering row for ${item.symbol}`);
           // Safely resolve buyPrice
           let resolvedBuyPrice;
           if (typeof item.buyPrice === "number") {
@@ -100,7 +103,7 @@ const TickerTable = ({
             !Array.isArray(item.historicalData) ||
             item.historicalData.length === 0
           ) {
-            console.warn(`⚠️ Invalid ticker data for ${item.symbol}. Skipping row.`, item);
+            console.warn(`\u26a0\ufe0f Invalid ticker data for ${item.symbol}. Skipping row.`, item);
             return null;
           }
 

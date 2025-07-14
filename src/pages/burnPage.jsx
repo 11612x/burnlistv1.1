@@ -12,6 +12,7 @@ import { generateFixedMockWatchlist } from "@data/mockTickerGenerator";
 import NotificationBanner from '@components/NotificationBanner';
 import CustomButton from '@components/CustomButton';
 import EditToggleButton from "@components/EditToggleButton";
+import { useTheme } from '../ThemeContext';
 
 const CRT_GREEN = 'rgb(140,185,162)';
 
@@ -46,6 +47,7 @@ const BurnPage = () => {
   const [notification, setNotification] = useState("");
   const [notificationType, setNotificationType] = useState("info");
   const [editMode, setEditMode] = useState(false);
+  const { isInverted } = useTheme();
 
   // Calculate average return for the current watchlist
   const averageReturn = useAverageReturn(watchlist?.items || [], selectedTimeframe);
@@ -206,14 +208,14 @@ const BurnPage = () => {
 
   if (!watchlist) {
     return (
-      <div style={{ backgroundColor: "#000000", color: "#ffffff", padding: "20px" }}>
-        <h2 style={{ color: "#e31507", fontFamily: "'Courier New', monospace" }}>⚠️ Watchlist not found.</h2>
+      <div style={{ backgroundColor: isInverted ? 'rgb(140,185,162)' : '#000000', color: isInverted ? '#000000' : '#ffffff', padding: '20px' }}>
+        <h2 style={{ color: '#e31507', fontFamily: "'Courier New', monospace" }}>⚠️ Watchlist not found.</h2>
       </div>
     );
   }
 
   return (
-    <div style={{ backgroundColor: "transparent", minHeight: "100vh", color: "#ffffff" }}>
+    <div style={{ backgroundColor: isInverted ? 'rgb(140,185,162)' : 'transparent', minHeight: '100vh', color: isInverted ? '#000000' : '#ffffff' }}>
       {/* Centralized Notification Banner */}
       {notification && (
         <div style={{ position: 'fixed', top: 24, left: 0, right: 0, zIndex: 10001, display: 'flex', justifyContent: 'center', pointerEvents: 'none' }}>

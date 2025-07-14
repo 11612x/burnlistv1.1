@@ -11,10 +11,14 @@ import {
 } from "recharts";
 import CustomTooltip from "./CustomTooltip";
 import { getSlicedData, getReturnInTimeframe } from '@logic/portfolioUtils';
+import { useThemeColor } from '../ThemeContext';
 
 const CRT_GREEN = 'rgb(140,185,162)';
 
 const WatchlistChart = ({ portfolioReturnData, height = 300, showTooltip = true, mini = false, suppressEmptyMessage = false }) => {
+  const green = useThemeColor(CRT_GREEN);
+  const black = useThemeColor('black');
+  const gray = useThemeColor('#888');
   // Memoize chart data for performance
   const chartData = useMemo(() => {
     if (!Array.isArray(portfolioReturnData) || portfolioReturnData.length === 0) return [];
@@ -97,7 +101,7 @@ const WatchlistChart = ({ portfolioReturnData, height = 300, showTooltip = true,
   if (!chartData || chartData.length === 0) {
     if (suppressEmptyMessage) return null;
     return (
-      <div style={{ textAlign: "center", padding: 40, color: CRT_GREEN, fontFamily: "'Courier New'", background: '#000' }}>
+      <div style={{ textAlign: "center", padding: 40, color: green, fontFamily: "'Courier New'", background: black }}>
         No valid data to display yet.
       </div>
     );
@@ -120,7 +124,7 @@ const WatchlistChart = ({ portfolioReturnData, height = 300, showTooltip = true,
   }
 
   return (
-    <div style={{ width: "100%", height, backgroundColor: '#000', fontFamily: 'Courier New' }}>
+    <div style={{ width: "100%", height, backgroundColor: black, fontFamily: 'Courier New' }}>
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={chartData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
           {/* Minimalist sparkline if mini */}
@@ -130,7 +134,7 @@ const WatchlistChart = ({ portfolioReturnData, height = 300, showTooltip = true,
               <Line
                 type="monotone"
                 dataKey="returnPercent"
-                stroke={CRT_GREEN}
+                stroke={green}
                 strokeWidth={2}
                 dot={false}
                 activeDot={false}
@@ -143,14 +147,14 @@ const WatchlistChart = ({ portfolioReturnData, height = 300, showTooltip = true,
               <YAxis
                 type="number"
                 domain={[yMin, yMax]}
-                tick={{ fill: CRT_GREEN, fontFamily: 'Courier New', fontSize: 12 }}
+                tick={{ fill: green, fontFamily: 'Courier New', fontSize: 12 }}
                 axisLine={true}
                 tickLine={false}
-                stroke={CRT_GREEN}
+                stroke={green}
                 strokeWidth={1}
                 tickFormatter={v => v.toFixed(2)}
               >
-                <Label value="%" position="insideTopLeft" offset={-8} fill={CRT_GREEN} fontSize={14} />
+                <Label value="%" position="insideTopLeft" offset={-8} fill={green} fontSize={14} />
               </YAxis>
               {/* X Axis with date label */}
               <XAxis
@@ -160,27 +164,27 @@ const WatchlistChart = ({ portfolioReturnData, height = 300, showTooltip = true,
                 tick={false}
                 axisLine={true}
                 tickLine={false}
-                stroke={CRT_GREEN}
+                stroke={green}
                 strokeWidth={1}
                 scale="linear"
               />
               {/* Faint zero line */}
-              <ReferenceLine y={0} stroke="#888" strokeDasharray="3 3" />
+              <ReferenceLine y={0} stroke={gray} strokeDasharray="3 3" />
               {/* Main average return line */}
               <Line
                 type="monotone"
                 dataKey="returnPercent"
-                stroke={CRT_GREEN}
+                stroke={green}
                 strokeWidth={2}
-                dot={{ r: 3, fill: CRT_GREEN, stroke: '#000', strokeWidth: 1 }}
-                activeDot={{ r: 5, fill: CRT_GREEN, stroke: CRT_GREEN, strokeWidth: 2 }}
+                dot={{ r: 3, fill: green, stroke: black, strokeWidth: 1 }}
+                activeDot={{ r: 5, fill: green, stroke: green, strokeWidth: 2 }}
                 isAnimationActive={false}
               />
               {/* Tooltip only on datapoints */}
               {showTooltip && (
                 <Tooltip
                   content={CustomTooltip}
-                  cursor={{ stroke: CRT_GREEN, strokeWidth: 1, strokeDasharray: '2 2' }}
+                  cursor={{ stroke: green, strokeWidth: 1, strokeDasharray: '2 2' }}
                   wrapperStyle={{
                     position: 'absolute',
                     bottom: 10,

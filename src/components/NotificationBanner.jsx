@@ -1,24 +1,22 @@
 import React from 'react';
-
-const typeStyles = {
-  info:   { background: '#222', color: '#8CB9A2', border: '1px solid #8CB9A2' },
-  loading:{ background: '#111', color: '#8CB9A2', border: '1px solid #8CB9A2' },
-  error:  { background: '#e31507', color: 'black', border: '1px solid #e31507' },
-  success:{ background: '#0de309', color: 'black', border: '1px solid #0de309' },
-};
+import { useThemeColor } from '../ThemeContext';
 
 const NotificationBanner = ({ message, type = 'info', onClose }) => {
   if (!message) return null;
-  const style = typeStyles[type] || typeStyles.info;
+  const bg = useThemeColor(type === 'error' ? '#e31507' : type === 'success' ? '#0de309' : type === 'loading' ? '#111' : '#222');
+  const fg = useThemeColor(type === 'error' || type === 'success' ? 'black' : '#8CB9A2');
+  const border = useThemeColor(type === 'error' ? '#e31507' : type === 'success' ? '#0de309' : '#8CB9A2');
   return (
     <div
       style={{
-        ...style,
+        background: bg,
+        color: fg,
+        border: `1px solid ${border}`,
         padding: '10px',
         textAlign: 'center',
         fontFamily: 'Courier New',
         fontSize: 16,
-        borderBottom: style.border,
+        borderBottom: `1px solid ${border}`,
         position: 'relative',
         marginBottom: 8,
         cursor: onClose ? 'pointer' : 'default',

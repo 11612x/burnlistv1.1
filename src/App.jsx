@@ -6,8 +6,11 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "@pages/HomePage";
 import BurnPage from "@pages/burnPage";
 import MockWatchlistPage from "@pages/MockWatchlistPage";
+import UniverseScreenerPage from "@pages/UniverseScreenerPage";
+import UniverseHomePage from "@pages/UniverseHomePage";
 // Fetch manager for cleanup
 import { fetchManager } from '@data/fetchManager';
+import { ThemeProvider } from './ThemeContext';
 
 
 function App() {
@@ -36,20 +39,26 @@ function App() {
   }, []);
 
   return (
-    <Router>
-      <Routes>
-        <Route
-          path="/"
-          element={<Home watchlists={watchlists} setWatchlists={setWatchlists} />}
-        />
-        <Route
-          path="/watchlist/:slug"
-          element={<BurnPage watchlists={watchlists} setWatchlists={setWatchlists} />}
-        />
-        {/* Route for mock watchlist testing - remove when not needed */}
-        <Route path="/mockwatchlist" element={<MockWatchlistPage />} />
-      </Routes>
-    </Router>
+    <ThemeProvider>
+      <Router>
+        <Routes>
+          <Route
+            path="/"
+            element={<Home watchlists={watchlists} setWatchlists={setWatchlists} />}
+          />
+          <Route
+            path="/watchlist/:slug"
+            element={<BurnPage watchlists={watchlists} setWatchlists={setWatchlists} />}
+          />
+          {/* Route for mock watchlist testing - remove when not needed */}
+          <Route path="/mockwatchlist" element={<MockWatchlistPage />} />
+          {/* Route for Universe Homepage */}
+          <Route path="/universes" element={<UniverseHomePage />} />
+          {/* Route for Universe Screener */}
+          <Route path="/universe/:slug" element={<UniverseScreenerPage />} />
+        </Routes>
+      </Router>
+    </ThemeProvider>
   );
 }
 

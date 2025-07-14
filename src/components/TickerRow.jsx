@@ -5,6 +5,7 @@
  * - The return percentage now clearly reflects, "How did this asset perform from the start of the selected timeframe?"
  */
 import React from "react";
+import { useThemeColor } from '../ThemeContext';
 
 const CRT_GREEN = 'rgb(140,185,162)';
 
@@ -12,21 +13,14 @@ const TickerRow = ({
   item, index, editMode,
   handleChangeSymbol, handleBuyPriceChange, handleDelete, items, changePercent
 }) => {
+  const green = useThemeColor(CRT_GREEN);
+  const black = useThemeColor('black');
+  const red = useThemeColor('#e31507');
   console.log("🧩 TickerRow received item:", item);
   console.log("📦 Historical Data:", item.historicalData);
 
-  const getSymbolWithStars = (symbol, index) => {
-    const totalCount = items.filter((it) => it.symbol === symbol).length;
-    if (totalCount > 1) {
-      const countBefore = items.slice(0, index).filter((it) => it.symbol === symbol).length;
-      const stars = "*".repeat(countBefore + 1);
-      return symbol + stars;
-    }
-    return symbol;
-  };
-
   if (!item || !Array.isArray(item.historicalData)) {
-    console.warn("⛔ Invalid item or missing historicalData for row", item);
+    console.warn("\u26d4 Invalid item or missing historicalData for row", item);
     return null;
   }
 
@@ -43,7 +37,7 @@ const TickerRow = ({
   console.log(`📈 Latest price for ${item.symbol}:`, latestPrice);
 
   if (isNaN(buy)) {
-    console.warn(`⛔ Skipping row: No valid buy price resolved for ${item.symbol}`);
+    console.warn(`\u26d4 Skipping row: No valid buy price resolved for ${item.symbol}`);
     return null;
   }
 
@@ -51,8 +45,8 @@ const TickerRow = ({
   console.log(`📊 [ChangePercent Prop] ${item.symbol}:`, changePercent);
   console.log(`✅ Rendering row for ${item.symbol}`);
   return (
-    <tr key={index} style={{ borderBottom: `1px solid ${CRT_GREEN}`, background: 'black' }}>
-      <td style={{ padding: 8, fontFamily: "'Courier New', Courier, monospace", color: CRT_GREEN }}>
+    <tr key={index} style={{ borderBottom: `1px solid ${green}`, background: black }}>
+      <td style={{ padding: 8, fontFamily: "'Courier New', Courier, monospace", color: green }}>
         {editMode ? (
           <input
             type="text"
@@ -61,9 +55,9 @@ const TickerRow = ({
             style={{
               fontFamily: "'Courier New', Courier, monospace",
               fontSize: "1rem",
-              backgroundColor: "black",
-              border: `1px solid ${CRT_GREEN}`,
-              color: CRT_GREEN,
+              backgroundColor: black,
+              border: `1px solid ${green}`,
+              color: green,
               padding: 4,
               width: 80,
               textTransform: "uppercase",
@@ -72,12 +66,20 @@ const TickerRow = ({
         ) : (
           <>
             {item.incomplete && <span style={{ marginRight: 4 }}>⚠️</span>}
-            {getSymbolWithStars(item.symbol, index)}
+            {(() => {
+              const totalCount = items.filter((it) => it.symbol === item.symbol).length;
+              if (totalCount > 1) {
+                const countBefore = items.slice(0, index).filter((it) => it.symbol === item.symbol).length;
+                const stars = "*".repeat(countBefore + 1);
+                return item.symbol + stars;
+              }
+              return item.symbol;
+            })()}
           </>
         )}
       </td>
       {/* Buy Price: always original buy-in price */}
-      <td style={{ padding: 8, fontFamily: "'Courier New', Courier, monospace", color: CRT_GREEN }}>
+      <td style={{ padding: 8, fontFamily: "'Courier New', Courier, monospace", color: green }}>
         {editMode ? (
           <input
             type="number"
@@ -92,9 +94,9 @@ const TickerRow = ({
             style={{
               fontFamily: "'Courier New', Courier, monospace",
               fontSize: "1rem",
-              backgroundColor: "black",
-              border: `1px solid ${CRT_GREEN}`,
-              color: CRT_GREEN,
+              backgroundColor: black,
+              border: `1px solid ${green}`,
+              color: green,
               padding: 4,
               width: 80,
             }}
@@ -104,11 +106,11 @@ const TickerRow = ({
         )}
       </td>
       {/* Current Price: always latest price */}
-      <td style={{ padding: 8, fontFamily: "'Courier New', Courier, monospace", color: CRT_GREEN }}>
+      <td style={{ padding: 8, fontFamily: "'Courier New', Courier, monospace", color: green }}>
         {!isNaN(latestPrice) ? latestPrice.toFixed(2) : "-"}
       </td>
       {/* % Change: still updates per timeframe */}
-      <td style={{ padding: 8, fontFamily: "'Courier New', Courier, monospace", color: CRT_GREEN }}>
+      <td style={{ padding: 8, fontFamily: "'Courier New', Courier, monospace", color: green }}>
         {
           (() => {
             const parsedChange = Number(changePercent);
@@ -118,7 +120,7 @@ const TickerRow = ({
               <span
                 title="Simulated return over selected timeframe"
                 style={{
-                  color: parsedChange >= 0 ? CRT_GREEN : "#e31507",
+                  color: parsedChange >= 0 ? green : red,
                   fontFamily: "'Courier New', Courier, monospace"
                 }}
               >
@@ -126,11 +128,11 @@ const TickerRow = ({
               </span>
             ) : (
               <>
-                {console.warn("⚠️ Missing or invalid changePercent for", item.symbol)}
+                {console.warn("\u26a0\ufe0f Missing or invalid changePercent for", item.symbol)}
                 <span
                   title="Change % not available"
                   style={{
-                    color: "#888888",
+                    color: useThemeColor('#888888'),
                     fontFamily: "'Courier New', Courier, monospace"
                   }}
                 >
@@ -150,8 +152,8 @@ const TickerRow = ({
               }
             }}
             style={{
-              backgroundColor: "#e31507",
-              color: "black",
+              backgroundColor: red,
+              color: black,
               border: "none",
               padding: "6px 12px",
               cursor: "pointer",

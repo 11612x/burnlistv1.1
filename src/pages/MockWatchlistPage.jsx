@@ -5,12 +5,14 @@ import TimeframeSelector from '@components/TimeframeSelector';
 import TickerTable from '@components/TickerTable';
 import { useAverageReturn } from '@hooks/useAverageReturn';
 import { generateFixedMockWatchlist } from '@data/mockTickerGenerator';
+import { useTheme } from '../ThemeContext';
 
 const MOCK_KEY = 'burnlist_mock_watchlist';
 
 const MockWatchlistPage = () => {
   const [selectedTimeframe, setSelectedTimeframe] = useState('D');
   const [watchlist, setWatchlist] = useState(null);
+  const { isInverted } = useTheme();
 
   useEffect(() => {
     // Try to load from localStorage
@@ -33,11 +35,11 @@ const MockWatchlistPage = () => {
   const averageReturn = useAverageReturn(watchlist?.items || [], selectedTimeframe);
 
   if (!watchlist) {
-    return <div style={{ color: '#FFA500', background: 'black', padding: 40, fontFamily: 'Courier New' }}>Loading mock watchlist...</div>;
+    return <div style={{ color: '#FFA500', background: isInverted ? 'rgb(140,185,162)' : 'black', padding: 40, fontFamily: 'Courier New' }}>Loading mock watchlist...</div>;
   }
 
   return (
-    <div style={{ backgroundColor: 'black', minHeight: '100vh', color: '#FFA500' }}>
+    <div style={{ backgroundColor: isInverted ? 'rgb(140,185,162)' : 'black', minHeight: '100vh', color: isInverted ? '#000000' : '#FFA500' }}>
       {/* DEV MODE BANNER */}
       <div style={{ background: '#FFA500', color: 'black', fontWeight: 'bold', textAlign: 'center', padding: '12px 0', fontFamily: 'Courier New', letterSpacing: 2 }}>
         DEV MODE: MOCK WATCHLIST (ORANGE = DEV)

@@ -2,10 +2,16 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { fetchManager } from '@data/fetchManager';
 import NotificationBanner from '@components/NotificationBanner';
+import { useThemeColor } from '../ThemeContext';
 
 const CRT_GREEN = 'rgb(140,185,162)';
 
 const WatchlistHeader = ({ name, averageReturn, selected, setWatchlists, notification, onNotificationClose, onRefresh }) => {
+  const green = useThemeColor(CRT_GREEN);
+  const black = useThemeColor('black');
+  const red = useThemeColor('#e31507');
+  const orange = useThemeColor('#FFA500');
+  const gray = useThemeColor('#888');
   // Debug: Log the precomputed average return passed as prop
   console.log("📊 WatchlistHeader received averageReturn:", averageReturn);
   const returnPercent = Number.isFinite(averageReturn) ? averageReturn : null;
@@ -175,15 +181,15 @@ const WatchlistHeader = ({ name, averageReturn, selected, setWatchlists, notific
         justifyContent: "space-between",
         alignItems: "center",
         padding: "1.5rem 2rem",
-        backgroundColor: "#000000",
-        color: CRT_GREEN,
+        backgroundColor: black,
+        color: green,
         fontFamily: "'Courier New', Courier, monospace",
         width: "100%"
       }}>
         {/* Left: Back Home Button */}
         <div>
           <a href="/" style={{
-            color: CRT_GREEN,
+            color: green,
             textDecoration: "none",
             fontWeight: "bold",
             fontSize: "1rem"
@@ -195,7 +201,7 @@ const WatchlistHeader = ({ name, averageReturn, selected, setWatchlists, notific
             margin: 0,
             fontSize: "2rem",
             whiteSpace: "nowrap",
-            color: CRT_GREEN
+            color: green
           }}>
             {watchlistName ? watchlistName : (name || "Untitled Watchlist")}
           </h1>
@@ -203,7 +209,7 @@ const WatchlistHeader = ({ name, averageReturn, selected, setWatchlists, notific
             style={{
               fontSize: "1rem",
               marginTop: 4,
-              color: returnPercent >= 0 ? CRT_GREEN : "#e31507"
+              color: returnPercent >= 0 ? green : red
             }}
           >
             {returnPercent !== null ? `${returnPercent.toFixed(2)}%` : "–%"} ({selected?.toUpperCase() || "N/A"})
@@ -214,7 +220,7 @@ const WatchlistHeader = ({ name, averageReturn, selected, setWatchlists, notific
               style={{ 
                 marginTop: "0.5rem", 
                 fontSize: "0.8rem", 
-                color: apiStatus.current > 0 ? "#FFA500" : "#888",
+                color: apiStatus.current > 0 ? orange : gray,
                 cursor: apiStatus.current > 0 ? "help" : "default"
               }}
               title={apiStatus.current > 0 ? "API requests in progress - waiting 1 minute between batches" : ""}
@@ -225,12 +231,12 @@ const WatchlistHeader = ({ name, averageReturn, selected, setWatchlists, notific
           {/* Countdown timer (green) and progress indicator (red) */}
           <div style={{ marginTop: "0.5rem", fontSize: "0.8rem" }}>
             {fetchProgress && typeof fetchProgress.tickersFetched === 'number' && typeof fetchProgress.totalTickers === 'number' ? (
-              <span style={{ color: "#e31507", fontWeight: "bold" }}>
+              <span style={{ color: red, fontWeight: "bold" }}>
                 {fetchProgress.tickersFetched}/{fetchProgress.totalTickers}
               </span>
             ) : (
               countdown && (
-                <span style={{ color: CRT_GREEN }}>
+                <span style={{ color: green }}>
                   {countdown}
                 </span>
               )
@@ -241,15 +247,15 @@ const WatchlistHeader = ({ name, averageReturn, selected, setWatchlists, notific
             style={{
               marginTop: "0.5rem",
               fontSize: "0.8rem",
-              color: isRefreshing ? "black" : CRT_GREEN,
-              background: isRefreshing ? "#e31507" : "transparent",
-              border: `1px solid ${isRefreshing ? "#e31507" : CRT_GREEN}`,
+              color: isRefreshing ? black : green,
+              background: isRefreshing ? red : "transparent",
+              border: `1px solid ${isRefreshing ? red : green}`,
               padding: "2px 6px",
               cursor: "pointer",
               fontFamily: "'Courier New', Courier, monospace"
             }}
           >
-            {isRefreshing ? "CANCEL" : "⟳ Refresh Prices"}
+            {isRefreshing ? 'CANCEL' : 'REFRESH'}
           </button>
         </div>
       </div>

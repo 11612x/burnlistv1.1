@@ -7,6 +7,9 @@ import { generateFixedMockWatchlist } from '@data/mockTickerGenerator';
 import { fetchManager } from '@data/fetchManager';
 import NotificationBanner from '@components/NotificationBanner';
 import CustomButton from '@components/CustomButton';
+import logo from '../assets/logo.png';
+import logoblack from '../assets/logoblack.png';
+import { useTheme, useThemeColor } from '../ThemeContext';
 
 const slugify = (text) =>
   text
@@ -29,6 +32,11 @@ const HomePage = ({ watchlists = {}, setWatchlists }) => {
   const selectedTimeframe = 'MAX';
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const { isInverted, toggleTheme } = useTheme();
+  const green = useThemeColor(CRT_GREEN);
+  const black = useThemeColor('black');
+  const red = useThemeColor('#e31507');
+  const gray = useThemeColor('#888');
 
   // Calculate unique real tickers across all watchlists (move this up)
   const uniqueRealTickers = useMemo(() => {
@@ -232,15 +240,44 @@ const HomePage = ({ watchlists = {}, setWatchlists }) => {
 
 
   return (
-    <div style={{ fontFamily: 'Courier New', color: CRT_GREEN, backgroundColor: 'black', minHeight: '100vh', padding: '32px' }}>
+    <div style={{
+      fontFamily: 'Courier New',
+      color: green,
+      backgroundColor: black,
+      minHeight: '100vh',
+      padding: '32px',
+      transition: 'background 0.3s, color 0.3s'
+    }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24 }}>
-        <div>
-          <strong style={{ fontSize: '170%' }}>BURNLIST v1.1</strong>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <button
+            onClick={toggleTheme}
+            style={{
+              border: 'none',
+              background: 'none',
+              padding: 0,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+            }}
+            aria-label="Toggle theme"
+          >
+            <img src={isInverted ? logoblack : logo} alt="Burnlist Logo" style={{ width: 40, height: 40, marginRight: 10, transition: 'filter 0.3s' }} />
+          </button>
+          <strong style={{ fontSize: '170%', lineHeight: '40px', display: 'inline-block', color: green }}>BURNLIST v1.1</strong>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ color: '#e31507', fontWeight: 'bold', fontSize: 12 }}>{uniqueRealTickers.length}</span>
-          <span style={{ color: '#8CB9A2', fontWeight: 'bold', fontSize: 12 }}>{fetchCount}</span>
-          <span>ACCOUNT: local</span>
+          <span style={{ color: red, fontWeight: 'bold', fontSize: 12 }}>{uniqueRealTickers.length}</span>
+          <span style={{ color: green, fontWeight: 'bold', fontSize: 12 }}>{fetchCount}</span>
+          <span 
+            onClick={() => {
+              const data = JSON.parse(localStorage.getItem('burnlist_watchlists'));
+              console.log('🧪 Current localStorage burnlist_watchlists:', data);
+            }}
+            style={{ cursor: 'pointer', color: green }}
+          >
+            ACCOUNT: local
+          </span>
         </div>
       </div>
 
@@ -253,20 +290,23 @@ const HomePage = ({ watchlists = {}, setWatchlists }) => {
             }
           `}
         </style>
-        <CustomButton
-          onClick={() => {
-            setView(view === 'terminal' ? 'graph' : 'terminal');
-            console.log('🖥️ View toggled to:', view === 'terminal' ? 'graph' : 'terminal');
-          }}
-        >
-          {view === 'terminal' ? 'GRAPH VIEW' : 'TERMINAL VIEW'}
-        </CustomButton>
+        <Link to="/universes" style={{ textDecoration: 'none' }}>
+          <CustomButton
+            style={{
+              backgroundColor: black,
+              color: green,
+              border: `1px solid ${green}`
+            }}
+          >
+            UNIVERSE
+          </CustomButton>
+        </Link>
         <CustomButton
           onClick={handleCreateWatchlist}
           className={justClicked ? 'clicked-button' : ''}
           style={{
-            backgroundColor: CRT_GREEN,
-            color: 'black',
+            backgroundColor: green,
+            color: black,
             transition: 'all 0.2s ease-in-out'
           }}
         >
@@ -279,29 +319,26 @@ const HomePage = ({ watchlists = {}, setWatchlists }) => {
             console.log('🛠️ Edit mode:', !editMode);
           }}
           style={{
-            backgroundColor: editMode ? CRT_GREEN : 'black',
-            color: editMode ? 'black' : CRT_GREEN,
+            backgroundColor: editMode ? green : black,
+            color: editMode ? black : green,
           }}
         >
           {editMode ? 'DONE' : 'EDIT'}
         </CustomButton>
 
-        {process.env.NODE_ENV === 'development' && (
-          <CustomButton
-            onClick={() => {
-              const data = JSON.parse(localStorage.getItem('burnlist_watchlists'));
-              console.log('🧪 Current localStorage burnlist_watchlists:', data);
-            }}
-            style={{ 
-              marginLeft: '12px',
-              backgroundColor: 'black',
-              color: CRT_GREEN,
-              border: `1px solid ${CRT_GREEN}`
-            }}
-          >
-            DEBUG:STORAGE
-          </CustomButton>
-        )}
+        <CustomButton
+          onClick={() => {
+            setView(view === 'terminal' ? 'graph' : 'terminal');
+            console.log('🖥️ View toggled to:', view === 'terminal' ? 'graph' : 'terminal');
+          }}
+          style={{ 
+            backgroundColor: black,
+            color: green,
+            border: `1px solid ${green}`
+          }}
+        >
+          {view === 'terminal' ? 'GRAPH VIEW' : 'TERMINAL VIEW'}
+        </CustomButton>
       </div>
 
       {/* Centralized Notification Banner */}
@@ -403,7 +440,7 @@ const HomePage = ({ watchlists = {}, setWatchlists }) => {
             background: 'transparent',
             padding: '10px 8px',
             margin: 0,
-            border: `1px solid ${CRT_GREEN}`,
+            border: `1px solid ${green}`,
             borderRadius: 0,
             boxShadow: 'none',
             display: 'flex',
@@ -429,9 +466,9 @@ const HomePage = ({ watchlists = {}, setWatchlists }) => {
                 style={{
                   fontFamily: 'Courier New',
                   fontSize: 18,
-                  color: CRT_GREEN,
-                  background: 'black',
-                  border: '1px solid #333',
+                  color: green,
+                  background: black,
+                  border: `1px solid ${gray}`,
                   marginBottom: 4,
                   padding: '2px 4px',
                   width: '100%',
@@ -442,7 +479,7 @@ const HomePage = ({ watchlists = {}, setWatchlists }) => {
                 }}
               />
             ) : (
-              <div style={{ fontSize: 18, color: CRT_GREEN, fontWeight: 'bold', marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <div style={{ fontSize: 18, color: green, fontWeight: 'bold', marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {item.name || `PORTFOLIO ${idx + 1}`}
               </div>
             )}
@@ -451,9 +488,9 @@ const HomePage = ({ watchlists = {}, setWatchlists }) => {
               <CustomButton
                 onClick={() => handleDeleteWatchlist(item.id)}
                 style={{
-                  backgroundColor: 'black',
-                  color: '#e31507',
-                  border: '1px solid #e31507',
+                  backgroundColor: black,
+                  color: red,
+                  border: `1px solid ${red}`,
                   padding: '2px 6px',
                   marginBottom: 4,
                   fontSize: 10,
@@ -472,9 +509,9 @@ const HomePage = ({ watchlists = {}, setWatchlists }) => {
                   style={{
                     fontFamily: 'Courier New',
                   fontSize: 14,
-                  color: CRT_GREEN,
-                  background: 'black',
-                  border: '1px solid #333',
+                  color: green,
+                  background: black,
+                  border: `1px solid ${gray}`,
                   marginBottom: 4,
                   padding: '2px 4px',
                   width: '100%',
@@ -485,21 +522,21 @@ const HomePage = ({ watchlists = {}, setWatchlists }) => {
                 placeholder="Reason..."
               />
             ) : (
-              <div style={{ fontSize: 14, color: CRT_GREEN, marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <div style={{ fontSize: 14, color: green, marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {item.reason || 'N/A'}
               </div>
             )}
             {/* Portfolio info */}
-            <div style={{ fontSize: 13, color: CRT_GREEN, marginBottom: 2 }}>
+            <div style={{ fontSize: 13, color: green, marginBottom: 2 }}>
               {tickers.length} stocks | Risk: {riskIndicator}
             </div>
             {/* Last update */}
-            <div style={{ fontSize: 11, color: '#888', marginBottom: 2 }}>
+            <div style={{ fontSize: 11, color: gray, marginBottom: 2 }}>
               {lastUpdate}
             </div>
             {/* Return percent in terminal view */}
             {view !== 'graph' && tickers.length > 0 && (
-              <div style={{ fontSize: 19, color: returnColor, fontWeight: 'bold', marginBottom: 2 }}>
+              <div style={{ fontSize: 19, color: isPositive ? green : red, fontWeight: 'bold', marginBottom: 2 }}>
                 {lastReturn >= 0 ? '+' : ''}{lastReturn.toFixed(2)}%
               </div>
             )}
@@ -507,16 +544,16 @@ const HomePage = ({ watchlists = {}, setWatchlists }) => {
             {view === 'graph' && tickers.length > 0 && (
               <>
                 {/* Return (moved just above chart) */}
-                <div style={{ fontSize: 19, color: returnColor, fontWeight: 'bold', marginBottom: 2 }}>
+                <div style={{ fontSize: 19, color: isPositive ? green : red, fontWeight: 'bold', marginBottom: 2 }}>
                   {lastReturn >= 0 ? '+' : ''}{lastReturn.toFixed(2)}%
                 </div>
                 <div style={{
                   width: 180,
                   height: 94,
                   alignSelf: 'flex-end',
-                  border: `1.5px solid ${CRT_GREEN}`,
+                  border: `1.5px solid ${green}`,
                   borderRadius: 0,
-                  background: '#000',
+                  background: black,
                   padding: 1,
                   marginTop: 'auto', // push to bottom
                   display: 'flex',
@@ -532,7 +569,7 @@ const HomePage = ({ watchlists = {}, setWatchlists }) => {
                     }))}
                     showBacktestLine={false}
                     height={94}
-                    lineColor={chartColor}
+                    lineColor={isPositive ? green : red}
                     hideAxes={true}
                     hideBorder={true}
                     showTooltip={false}
