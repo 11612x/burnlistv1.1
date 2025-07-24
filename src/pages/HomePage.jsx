@@ -435,7 +435,7 @@ const HomePage = ({ watchlists = {}, setWatchlists }) => {
         const cardContent = (
           <div style={{
             width: 252,
-            height: editMode ? 250 : (view === 'graph' ? 220 : 120),
+                            height: editMode ? 250 : (view === 'graph' ? 235 : 120),
             fontFamily: 'Courier New',
             background: 'transparent',
             padding: '10px 8px',
