@@ -88,10 +88,12 @@ const WatchlistChart = ({ portfolioReturnData, height = 300, showTooltip = true,
         xIndex: i
       };
     });
-    // Debug log
-    console.log('Chart data points:', points);
     return points;
-  }, [portfolioReturnData, mini]);
+  }, [portfolioReturnData, mini, JSON.stringify(portfolioReturnData.map(item => ({
+    symbol: item.symbol,
+    buyPrice: item.buyPrice,
+    buyDate: item.buyDate
+  })))]);
 
   // Find the min and max xIndex for the chart
   const minXIndex = 0;

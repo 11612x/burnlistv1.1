@@ -6,21 +6,20 @@ import { useThemeColor } from '../ThemeContext';
 
 const CRT_GREEN = 'rgb(140,185,162)';
 
-const WatchlistHeader = ({ name, averageReturn, selected, setWatchlists, notification, onNotificationClose, onRefresh }) => {
+const WatchlistHeader = ({ name, averageReturn, selected, setWatchlists, notification, onNotificationClose, onRefresh, realStockCount: propRealStockCount }) => {
+  const { isInverted } = useTheme();
   const green = useThemeColor(CRT_GREEN);
   const black = useThemeColor('black');
   const red = useThemeColor('#e31507');
   const orange = useThemeColor('#FFA500');
   const gray = useThemeColor('#888');
-  // Debug: Log the precomputed average return passed as prop
-  console.log("📊 WatchlistHeader received averageReturn:", averageReturn);
+  
   const returnPercent = Number.isFinite(averageReturn) ? averageReturn : null;
-  if (returnPercent === null) {
-    console.warn("⚠️ averageReturn is invalid:", averageReturn);
-  }
+
+  // Use props for name and realStockCount
+  const realStockCount = propRealStockCount || 0;
 
   const [watchlistName, setWatchlistName] = useState("");
-  const [realStockCount, setRealStockCount] = useState(0);
   const { slug } = useParams();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [countdown, setCountdown] = useState(null);
@@ -149,7 +148,7 @@ const WatchlistHeader = ({ name, averageReturn, selected, setWatchlists, notific
           const realStocks = found.items.filter(item => 
             item.type === 'real' && !item.isMock
           );
-          setRealStockCount(realStocks.length);
+          // setRealStockCount(realStocks.length); // This line is now handled by the prop
           console.log("📊 Real stocks count:", realStocks.length);
         }
       }

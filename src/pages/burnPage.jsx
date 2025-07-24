@@ -51,6 +51,11 @@ const BurnPage = () => {
 
   // Calculate average return for the current watchlist
   const averageReturn = useAverageReturn(watchlist?.items || [], selectedTimeframe);
+  
+  // Calculate real stock count for header
+  const realStockCount = Array.isArray(watchlist?.items)
+    ? watchlist.items.filter(item => item.type === 'real' && !item.isMock).length
+    : 0;
 
   // Ref for interval
   const intervalRef = useRef(null);
@@ -189,6 +194,27 @@ const BurnPage = () => {
       return updated;
     });
   };
+
+  // Handler to change buy date
+  const handleBuyDateChange = (index, newDate) => {
+    // Only allow dates in the past (not future)
+    const today = new Date().toISOString().slice(0, 10);
+    if (newDate > today) return;
+    setWatchlist(prev => {
+      if (!prev || !Array.isArray(prev.items)) return prev;
+      const updatedItems = prev.items.map((item, i) => i === index ? { ...item, buyDate: newDate } : item);
+      const updated = { ...prev, items: updatedItems };
+      setWatchlists(watchlists => {
+        const key = Object.keys(watchlists).find(k => watchlists[k].slug === slug);
+        if (!key) return watchlists;
+        const updatedWatchlists = { ...watchlists, [key]: updated };
+        localStorage.setItem("burnlist_watchlists", JSON.stringify(updatedWatchlists));
+        return updatedWatchlists;
+      });
+      return updated;
+    });
+  };
+
   // Handler to delete a ticker
   const handleDeleteTicker = (index) => {
     setWatchlist(prev => {
@@ -237,6 +263,7 @@ const BurnPage = () => {
           notification={loading ? "Calculating returns and updating chart..." : null}
           onNotificationClose={() => setLoading(false)}
           onRefresh={handleManualRefresh}
+          realStockCount={realStockCount}
         />
         {/* Manual Refresh Button */}
         <CustomButton 
@@ -258,7 +285,8 @@ const BurnPage = () => {
             symbol: item.symbol,
             buyDate: item.buyDate,
             historicalData: item.historicalData,
-            timeframe: selectedTimeframe
+            timeframe: selectedTimeframe,
+            buyPrice: item.buyPrice
           })) || []} 
           showBacktestLine={false} 
           height={500}
@@ -274,6 +302,7 @@ const BurnPage = () => {
           selectedTimeframe={selectedTimeframe}
           editMode={editMode}
           handleBuyPriceChange={handleBuyPriceChange}
+          handleBuyDateChange={handleBuyDateChange}
           handleDelete={handleDeleteTicker}
         />
       ) : null}
