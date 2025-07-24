@@ -52,13 +52,13 @@ const BurnPage = () => {
   // Calculate average return for the current watchlist
   const averageReturn = useAverageReturn(watchlist?.items || [], selectedTimeframe);
   
+  // Ref for interval
+  const intervalRef = useRef(null);
+  
   // Calculate real stock count for header
   const realStockCount = Array.isArray(watchlist?.items)
     ? watchlist.items.filter(item => item.type === 'real' && !item.isMock).length
     : 0;
-
-  // Ref for interval
-  const intervalRef = useRef(null);
 
   // Fetch function using the new fetch manager
   const fetchWatchlistData = async (manual = false) => {
