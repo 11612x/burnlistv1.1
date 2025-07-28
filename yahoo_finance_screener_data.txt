@@ -1,0 +1,240 @@
+YAHOO FINANCE SCREENER DATA EXTRACTION
+=====================================
+Extracted Date: January 24, 2025
+Source URL: https://finance.yahoo.com/research-hub/screener/c4693e1f-f255-4c50-9a9f-5c5fe862b518/
+Related URLs: https://finance.yahoo.com/screener
+
+NOTE: The specific screener URL provided appears to be private or requires authentication.
+However, I was able to extract comprehensive data from related Yahoo Finance screener pages.
+
+==============================================
+AVAILABLE YAHOO FINANCE SCREENER CATEGORIES
+==============================================
+
+1. POPULAR SCREENERS
+-------------------
+- Most Active Stocks: Discover the most traded equities in the trading day
+- Most Active Penny Stocks: Stocks priced at $5 or less with highest daily volume and high % day change
+- Undervalued Growth Stocks: Stocks with earnings growth rates better than 25% and relatively low PE and PEG ratios
+- Analyst Strong Buy Stocks: Discover equities recently labeled as undervalued and discounted by Morningstar
+- Day Gainer Stocks: Discover equities with greatest gains in the trading day
+- Day Loser Stocks: Discover equities with greatest losses in the trading day
+- Aggressive Small Caps: Small cap stocks with high earnings growth rates
+- Most Shorted Stocks: Stocks with highest short interest positions from Nasdaq and NYSE reports
+
+2. MARKET MOVERS
+---------------
+- Most Active Stocks: Most traded equities in the trading day
+- Most Active Penny Stocks: Stocks ≤$5 with highest daily volume and high % day change
+- Day Gainer Stocks: Equities with greatest gains
+- Day Loser Stocks: Equities with greatest losses
+- Most Shorted Stocks: Highest short interest positions
+- Recent 52-Week Lows: Stocks that set 52-week lows within last week
+- Recent 52-Week Highs: Stocks that set 52-week highs within last week
+- Small Cap Gainers: Small cap stocks with percent change >5%
+- Bullish Stocks Right Now: Recent stocks with bullish technical pattern (Trading Central)
+- Bearish Stocks Right Now: Recent stocks with bearish technical pattern (Trading Central)
+- Upside Breakout Stocks: Upside breakout stocks on daily chart (Trading Central)
+
+3. VALUE AND GROWTH STRATEGIES
+-----------------------------
+- Undervalued Growth Stocks: Earnings growth >25% with low PE and PEG ratios
+- Morningstar 5-Star Stocks: Equities labeled as undervalued by Morningstar
+- Undervalued Wide-Moat Stocks: Undervalued with 20+ year economic moat (Morningstar)
+- Aggressive Small Caps: Small cap stocks with high earnings growth rates
+- Undervalued Large Caps: Potentially undervalued large caps, ordered by volume
+- Growth Technology Stocks: Tech stocks with revenue/earnings growth >25%
+- Portfolio Anchors: Funds with Performance Rating 4&5 and top-half returns
+- Solid Large Growth Funds: Large Growth Funds with Performance Rating 4&5
+- Solid Mid-Cap Growth Funds: Mid-Cap Growth Funds with Performance Rating 4&5
+- Strong Undervalued Stocks: Undervalued with robust earnings/revenue growth history
+
+4. FUND AND BOND STRATEGIES
+--------------------------
+- Top Mutual Funds: Funds with Performance Rating 4&5 ordered by Percent Change
+- Conservative Foreign Funds: Foreign funds with Performance Rating 4&5, low risk, top-half returns
+- High-Yield Bonds: High Yield Bonds with Performance Rating 4&5, low risk, top-half returns
+- Solid Large Growth Funds: Large Growth Funds with Performance Rating 4&5
+- Solid Mid-Cap Growth Funds: Mid-Cap Growth Funds with Performance Rating 4&5
+
+5. INSTITUTIONAL AND ANALYST ACTIVITY
+------------------------------------
+- Analyst Strong Buy Stocks: Equities labeled as undervalued by Morningstar
+- Latest Analyst Upgraded Stocks: Most recent analyst upgrades
+- Most Institutionally Bought Large Cap Stocks: Highest institutional buying % of outstanding shares
+- Most Institutionally Held Large Cap Stocks: Highest institutional ownership % of outstanding shares
+- Most Institutionally Sold Large Cap Stocks: Highest institutional selling % of outstanding shares
+- Stocks Most Bought by Hedge Funds: Most bought by Hedge Funds as % of outstanding shares
+- Stocks Most Bought by Pension Funds: Most bought by Pension Funds as % of outstanding shares
+- Stocks Most Bought by Private Equity: Most bought by Private Equity as % of outstanding shares
+- Stocks Most Bought by Sovereign Wealth Funds: Most bought by Sovereign Wealth Funds
+- Stocks with Most Institutional Buyers: Highest number of institutional buyers
+- Stocks with Most Institutional Sellers: Highest number of institutional sellers
+
+6. FAMOUS INVESTOR PORTFOLIOS
+----------------------------
+- Top Stocks owned by Cathie Wood: Cathie Wood's top holdings from 13F filings
+- Top Stocks owned by Goldman Sachs: Goldman Sachs top holdings from 13F filings
+- Top Stocks owned by Ray Dalio: Ray Dalio's top holdings from 13F filings
+- Top Stocks owned by Warren Buffet: Warren Buffet's top holdings from 13F filings
+
+===========================================
+CURRENT MARKET DATA (AS OF EXTRACTION)
+===========================================
+
+FUTURES (Pre-Market):
+- S&P Futures: 6,446.75 (+21.75, +0.34%)
+- Dow Futures: 45,182.00 (+98.00, +0.22%)
+- Nasdaq Futures: 23,543.75 (+122.50, +0.52%)
+- Russell 2000 Futures: 2,284.80 (+13.50, +0.59%)
+- VIX: 15.24 (+0.31, +2.08%)
+- Gold: 3,337.70 (+2.10, +0.06%)
+
+TOP GAINERS:
+1. FIX - Comfort Systems USA, Inc.: $688.74 (+$125.91, +22.37%)
+2. LYEL - Lyell Immunopharma, Inc.: $12.42 (+$2.01, +19.31%)
+3. GNTX - Gentex Corporation: $27.42 (+$3.82, +16.19%)
+4. NEGG - Newegg Commerce, Inc.: $34.31 (+$3.60, +11.72%)
+5. DECK - Deckers Outdoor Corporation: $116.85 (+$11.91, +11.35%)
+
+TOP LOSERS:
+1. LBRDA - Liberty Broadband Corporation: $70.06 (-$16.58, -19.14%)
+2. LBRDK - Liberty Broadband Corporation: $70.22 (-$16.53, -19.05%)
+3. CHTR - Charter Communications, Inc.: $309.75 (-$70.25, -18.49%)
+4. SNV - Synovus Financial Corp.: $49.61 (-$7.11, -12.54%)
+5. PNFP - Pinnacle Financial Partners, Inc.: $91.56 (-$12.60, -12.10%)
+
+MOST ACTIVE:
+1. INTC - Intel Corporation: $20.70 (-$1.93, -8.53%)
+2. TSLA - Tesla, Inc.: $316.06 (+$10.76, +3.52%)
+3. NVDA - NVIDIA Corporation: $173.50 (-$0.24, -0.14%)
+4. LCID - Lucid Group, Inc.: $2.92 (-$0.07, -2.34%)
+5. WBD - Warner Bros. Discovery, Inc.: $13.49 (-$0.01, -0.07%)
+
+TRENDING TICKERS:
+1. PLTR - Palantir Technologies Inc.: $158.80 (+$3.94, +2.54%)
+2. MCVT - Mill City Ventures III, Ltd.: $5.90 (+$4.05, +218.92%)
+3. ETH-USD - Ethereum USD: $3,897.44 (+$127.69, +3.39%)
+4. RHM.DE - Rheinmetall AG: €1,704.50 (-€29.50, -1.70%)
+5. 005930.KS - Samsung Electronics Co., Ltd.: ₩70,400.00 (+₩4,500.00, +6.83%)
+
+=====================================
+SAMPLE INDEX DATA (TOP 25 BY PERFORMANCE)
+=====================================
+
+1. ^BKDEE - S&P Eastern Europe DR Index (US): 792.93 (+761.88, +2,453.72%)
+2. ^BKGEE - S&P Eastern Europe GDR Index (U): 848.13 (+804.17, +1,829.32%)
+3. ^BKGEET - S&P Eastern Europe GDR Index (U): 1,165.82 (+1,072.16, +1,144.74%)
+4. ^SPCALHCT - S&P China A-Share Low Volatility: 16,022.27 (+6,975.89, +77.11%)
+5. ^BKETL - S&P Europe ADR Telecom (Industry): 41.95 (+14.47, +52.66%)
+6. ^SPJPCEJP - S&P/JPX Carbon Efficient Index: 385.66 (+131.31, +51.63%)
+7. ^BKGMA - S&P MENA GDR Index (USD): 729.91 (+248.32, +51.56%)
+8. ^BKCBR - S&P Brazil Classic ADR Index (U): 1,115.07 (+336.45, +43.21%)
+9. ^BKCN - S&P China ADR Index (USD): 583.63 (+174.12, +42.52%)
+10. ^BKBR - S&P Brazil ADR Index (USD): 267.93 (+78.30, +41.29%)
+11. ^SPNCSUP - S&P New China Sectors Index: 2,535.26 (+695.73, +37.82%)
+12. ^SPNCSCUP - S&P New China Sectors (A-shares): 2,519.48 (+671.95, +36.37%)
+13. ^SPNCSCHP - S&P New China Sectors (A-shares): 2,511.89 (+646.22, +34.64%)
+14. ^BKTTL - S&P International Select DR Tel: 784.59 (+193.69, +32.78%)
+15. ^BKCL - S&P Chile ADR Index (USD): 214.60 (+49.49, +29.97%)
+16. ^SPNCSUN - S&P New China Sectors Index NTR: 2,945.16 (+659.33, +28.84%)
+17. ^SPNCSCUN - S&P New China Sectors (A-shares): 2,916.72 (+637.90, +27.99%)
+18. ^SPCALHCP - S&P China A-Share Low Volatility: 8,289.99 (+1,788.81, +27.52%)
+19. ^SPNCSHN - S&P New China Sectors Index NTR: 2,936.30 (+628.02, +27.21%)
+20. ^SPNCSCHN - S&P New China Sectors (A-shares): 2,907.94 (+606.74, +26.37%)
+21. ^BKCNC - S&P China Select ADR Index (CAD): 4,719.61 (+933.14, +24.64%)
+22. ^BKGAF - S&P Africa GDR Index (USD): 978.02 (+187.39, +23.70%)
+23. ^BKGMAT - S&P MENA GDR Index (USD) NTR: 1,066.34 (+169.96, +18.96%)
+24. ^BKLA - S&P Latin America ADR Index (US): 239.61 (+37.31, +18.44%)
+25. ^BKTCNT - S&P China Select ADR Index (USD): 7,658.31 (+1,188.72, +18.37%)
+
+=======================================
+SPECIALIZED SCREENER EXAMPLES FOUND
+=======================================
+
+MORNINGSTAR 5-STAR STOCKS:
+- 65 stocks updated at 00:00
+- Filters: Morningstar Rating = 5, Updated within Last 3 Months
+- Description: Equities recently labeled as undervalued and discounted by Morningstar
+
+UNDERVALUED WIDE-MOAT STOCKS:
+- 45 stocks updated at 00:00
+- Filters: Economic Moat = Wide, Morningstar Rating = 2+, Updated within Last 3 Months, Low Uncertainty Rating
+- Description: Undervalued equities with economic moat that can last 20+ years (Morningstar)
+
+UPSIDE BREAKOUT STOCKS:
+- 43 stocks updated at 00:00
+- Filters: Outlook = Bullish, Price Period = Daily, Pattern Name = Upside Breakout, End Date within 3 days
+- Description: Upside breakout stocks on daily chart by Trading Central
+
+========================================
+SCREENER FILTER CATEGORIES AVAILABLE
+========================================
+
+EQUITY FILTERS:
+- Morningstar Rating
+- Economic Moat
+- Uncertainty Rating
+- Updated Time periods
+
+INDEX FILTERS:
+- Region (United States, etc.)
+- Volume thresholds
+- Percent Change ranges
+- 52 Week Range analysis
+
+TECHNICAL EVENT FILTERS:
+- Outlook (Bullish/Bearish)
+- Price Period (Daily/Weekly/Monthly)
+- Pattern Name (Upside Breakout, etc.)
+- End Date criteria
+
+==============================
+ADDITIONAL FEATURES NOTED
+==============================
+
+PREMIUM FEATURES:
+- Advanced screener tools with 1,000+ premium filters
+- Analyst ratings integration
+- Smart money moves tracking
+- Technical patterns analysis
+- Enhanced filtering capabilities
+
+VIEW OPTIONS:
+- Table View (default)
+- Heatmap View
+- Customizable columns
+- Sortable data
+- Export capabilities
+
+NAVIGATION SECTIONS:
+- Popular screeners
+- Saved screeners
+- Premium screeners
+- All screeners
+
+=================================
+LIMITATIONS AND NOTES
+=================================
+
+1. The specific screener URL (c4693e1f-f255-4c50-9a9f-5c5fe862b518) could not be directly accessed
+2. Many premium features require Yahoo Finance Premium subscription
+3. Real-time data access may be limited without subscription
+4. Some screeners show "Oops, something went wrong" errors, indicating potential authentication requirements
+5. Data extracted represents general market conditions at time of access
+6. Individual stock data within specific screeners was limited due to access restrictions
+
+=================================
+RECOMMENDED NEXT STEPS
+=================================
+
+To access the specific screener you mentioned:
+1. Log into Yahoo Finance with a premium account
+2. Navigate directly to the screener through the Yahoo Finance interface
+3. Use the general screener categories listed above as alternatives
+4. Consider using Yahoo Finance API for programmatic access
+5. Check if the screener URL requires specific permissions or is a private/shared screener
+
+========================================
+END OF EXTRACTION REPORT
+========================================
