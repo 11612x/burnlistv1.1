@@ -1,17 +1,29 @@
 import React, { useMemo } from "react";
 import {
-  LineChart,
-  Line,
-  ResponsiveContainer,
-  YAxis,
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
   Tooltip,
-  XAxis,
-  ReferenceLine,
-  Label
-} from "recharts";
+  Legend
+} from 'chart.js';
+import { Line } from 'react-chartjs-2';
 import CustomTooltip from "./CustomTooltip";
 import { getSlicedData, getReturnInTimeframe } from '@logic/portfolioUtils';
 import { useThemeColor } from '../ThemeContext';
+
+// Register ChartJS components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 const CRT_GREEN = 'rgb(140,185,162)';
 
@@ -19,6 +31,7 @@ const WatchlistChart = ({ portfolioReturnData, height = 300, showTooltip = true,
   const green = useThemeColor(CRT_GREEN);
   const black = useThemeColor('black');
   const gray = useThemeColor('#888');
+  
   // Memoize chart data for performance
   const chartData = useMemo(() => {
     if (!Array.isArray(portfolioReturnData) || portfolioReturnData.length === 0) return [];
@@ -98,10 +111,6 @@ const WatchlistChart = ({ portfolioReturnData, height = 300, showTooltip = true,
     timeframe: item.timeframe
   })))]);
 
-  // Find the min and max xIndex for the chart
-  const minXIndex = 0;
-  const maxXIndex = chartData.length > 0 ? chartData[chartData.length - 1].xIndex : undefined;
-
   // If no data, show empty chart or nothing if suppressed
   if (!chartData || chartData.length === 0) {
     if (suppressEmptyMessage) return null;
@@ -111,6 +120,10 @@ const WatchlistChart = ({ portfolioReturnData, height = 300, showTooltip = true,
       </div>
     );
   }
+
+  // Prepare data for Chart.js
+  const labels = chartData.map((_, index) => index);
+  const data = chartData.map(point => point.returnPercent);
 
   // Calculate Y axis domain
   const returnPercents = chartData.map(p => Number.isFinite(p.returnPercent) ? p.returnPercent : 0);
@@ -128,87 +141,106 @@ const WatchlistChart = ({ portfolioReturnData, height = 300, showTooltip = true,
     yMax += 1;
   }
 
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false
+      },
+      tooltip: {
+        enabled: showTooltip && !mini,
+        mode: 'index',
+        intersect: false,
+        backgroundColor: black,
+        titleColor: green,
+        bodyColor: green,
+        borderColor: green,
+        borderWidth: 1,
+        titleFont: {
+          family: 'Courier New',
+          size: 12
+        },
+        bodyFont: {
+          family: 'Courier New',
+          size: 11
+        },
+        callbacks: {
+          label: function(context) {
+            return `Return: ${context.parsed.y.toFixed(2)}%`;
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        display: !mini,
+        grid: {
+          display: false
+        },
+        ticks: {
+          display: false
+        },
+        border: {
+          display: true,
+          color: green,
+          width: 2
+        }
+      },
+      y: {
+        display: !mini,
+        grid: {
+          display: false
+        },
+        ticks: {
+          display: false
+        },
+        border: {
+          display: true,
+          color: green,
+          width: 2
+        },
+        min: yMin,
+        max: yMax
+      }
+    },
+    elements: {
+      point: {
+        radius: mini ? 0 : 3,
+        hoverRadius: mini ? 0 : 5,
+        backgroundColor: green,
+        borderColor: black,
+        borderWidth: 1
+      },
+      line: {
+        borderColor: green,
+        borderWidth: 2,
+        tension: 0.1
+      }
+    },
+    interaction: {
+      intersect: false,
+      mode: 'index'
+    }
+  };
+
+  const chartDataConfig = {
+    labels: labels,
+    datasets: [
+      {
+        label: 'Portfolio Return',
+        data: data,
+        borderColor: green,
+        backgroundColor: green,
+        fill: false,
+        tension: 0.1
+      }
+    ]
+  };
+
   return (
     <div style={{ width: "100%", height, backgroundColor: 'transparent', fontFamily: 'Courier New', overflow: 'hidden' }}>
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={chartData} margin={{ top: 5, right: 5, left: -61, bottom: -31 }}>
-          {/* Minimalist sparkline if mini */}
-          {mini ? (
-            <>
-              <YAxis hide={true} domain={[yMin, yMax]} padding={{ top: 0, bottom: 0 }} allowDataOverflow={true} />
-              <Line
-                type="monotone"
-                dataKey="returnPercent"
-                stroke={green}
-                strokeWidth={2}
-                dot={false}
-                activeDot={false}
-                isAnimationActive={false}
-              />
-            </>
-          ) : (
-            <>
-              {/* Y Axis with % label */}
-              <YAxis
-                type="number"
-                domain={[yMin, yMax]}
-                tick={false}
-                axisLine={true}
-                tickLine={false}
-                stroke={green}
-                strokeWidth={2}
-                allowDataOverflow={true}
-              />
-              {/* X Axis with date label */}
-              <XAxis
-                type="number"
-                dataKey="xIndex"
-                domain={[minXIndex, maxXIndex]}
-                tick={false}
-                axisLine={true}
-                tickLine={false}
-                stroke={green}
-                strokeWidth={2}
-                scale="linear"
-                allowDataOverflow={true}
-              />
-              {/* Faint zero line */}
-              <ReferenceLine y={0} stroke={gray} strokeDasharray="3 3" />
-              {/* Main average return line */}
-              <Line
-                type="monotone"
-                dataKey="returnPercent"
-                stroke={green}
-                strokeWidth={2}
-                dot={{ r: 3, fill: green, stroke: black, strokeWidth: 1 }}
-                activeDot={{ r: 5, fill: green, stroke: green, strokeWidth: 2 }}
-                isAnimationActive={false}
-              />
-              {/* Tooltip only on datapoints */}
-              {showTooltip && (
-                <Tooltip
-                  content={CustomTooltip}
-                  cursor={{ stroke: green, strokeWidth: 1, strokeDasharray: '2 2' }}
-                  wrapperStyle={{
-                    position: 'absolute',
-                    bottom: 10,
-                    right: 20,
-                    width: 180,
-                    height: 'auto',
-                    pointerEvents: 'none',
-                    zIndex: 10,
-                    margin: 0,
-                    padding: 8,
-                    boxSizing: 'border-box',
-                  }}
-                  filterNull={true}
-                  isAnimationActive={false}
-                />
-              )}
-            </>
-          )}
-        </LineChart>
-      </ResponsiveContainer>
+      <Line data={chartDataConfig} options={chartOptions} />
     </div>
   );
 };
