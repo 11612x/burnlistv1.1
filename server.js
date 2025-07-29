@@ -4,8 +4,26 @@ const app = express();
 
 const PORT = process.env.PORT || 3000;
 
-// Serve static files from the dist directory
-app.use(express.static(path.join(__dirname, 'dist')));
+// Set proper MIME types for CSS files
+app.use((req, res, next) => {
+  if (req.path.endsWith('.css')) {
+    res.setHeader('Content-Type', 'text/css');
+  }
+  next();
+});
+
+// Serve static files from the dist directory with proper caching
+app.use(express.static(path.join(__dirname, 'dist'), {
+  maxAge: '1h',
+  etag: true,
+  lastModified: true
+}));
+
+// Debug middleware to log requests
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.path}`);
+  next();
+});
 
 // Handle all routes by serving index.html (SPA routing)
 app.get('*', (req, res) => {
@@ -15,4 +33,5 @@ app.get('*', (req, res) => {
 app.listen(PORT, () => {
   console.log(`🚀 Frontend server running on port ${PORT}`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`📁 Serving static files from: ${path.join(__dirname, 'dist')}`);
 });
