@@ -1,4 +1,4 @@
-import { fetchQuote } from '@data/finvizAdapter';
+import { fetchQuote } from '@data/finhubAdapter';
 import { generateFixedMockWatchlist } from '@data/mockTickerGenerator';
 import { normalizeSymbol } from '@data/tickerUtils';
 import normalizeTicker from '@data/normalizeTicker';

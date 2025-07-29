@@ -266,7 +266,7 @@ const BurnPage = () => {
       
       if (historicalData.length === 0) {
         console.log(`📡 No existing historical data for ${ticker.symbol}, fetching from API...`);
-        const { fetchQuote } = await import('../data/finvizAdapter.js');
+        const { fetchQuote } = await import('../data/finhubAdapter.js');
         const freshData = await fetchQuote(ticker.symbol);
         if (freshData && freshData.historicalData) {
           historicalData = freshData.historicalData;

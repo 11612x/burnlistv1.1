@@ -1,4 +1,4 @@
-import { fetchQuote } from '@data/finvizAdapter';
+import { fetchQuote } from '@data/finhubAdapter';
 import normalizeTicker from '@data/normalizeTicker';
 
 // Merge historical data arrays, removing duplicates and sorting by timestamp
