@@ -175,22 +175,43 @@ const HomePage = ({ watchlists = {}, setWatchlists }) => {
   // Export all localStorage data to JSON file
   const handleExportData = () => {
     try {
-      const allData = {
-        watchlists: watchlists,
-        fetchCount: fetchCount,
-        tradeJournalTrades: JSON.parse(localStorage.getItem('trade_journal_trades') || '[]'),
-        timestamp: new Date().toISOString()
+      // Get ALL localStorage data
+      const allLocalStorageData = {};
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key) {
+          try {
+            // Try to parse as JSON first, fallback to string
+            const value = localStorage.getItem(key);
+            try {
+              allLocalStorageData[key] = JSON.parse(value);
+            } catch {
+              allLocalStorageData[key] = value;
+            }
+          } catch (error) {
+            console.warn(`Could not export localStorage key: ${key}`, error);
+          }
+        }
+      }
+      
+      const exportData = {
+        localStorage: allLocalStorageData,
+        exportInfo: {
+          timestamp: new Date().toISOString(),
+          totalKeys: Object.keys(allLocalStorageData).length,
+          keys: Object.keys(allLocalStorageData)
+        }
       };
       
-      const dataStr = JSON.stringify(allData, null, 2);
+      const dataStr = JSON.stringify(exportData, null, 2);
       const dataBlob = new Blob([dataStr], { type: 'application/json' });
       
       const link = document.createElement('a');
       link.href = URL.createObjectURL(dataBlob);
-      link.download = `burnlist_backup_${new Date().toISOString().split('T')[0]}.json`;
+      link.download = `burnlist_complete_backup_${new Date().toISOString().split('T')[0]}.json`;
       link.click();
       
-      setNotification('✅ Data exported successfully', 'success');
+      setNotification(`✅ All localStorage data exported (${Object.keys(allLocalStorageData).length} keys)`, 'success');
     } catch (error) {
       console.error('Export error:', error);
       setNotification('❌ Export failed', 'error');
@@ -207,27 +228,74 @@ const HomePage = ({ watchlists = {}, setWatchlists }) => {
       try {
         const importedData = JSON.parse(e.target.result);
         
-        // Validate the imported data structure
-        if (!importedData.watchlists || typeof importedData.watchlists !== 'object') {
-          throw new Error('Invalid data format: missing watchlists');
+        // Check if this is the new complete backup format
+        if (importedData.localStorage && importedData.exportInfo) {
+          // Import ALL localStorage data
+          const localStorageData = importedData.localStorage;
+          let importedCount = 0;
+          
+          Object.keys(localStorageData).forEach(key => {
+            try {
+              const value = localStorageData[key];
+              if (typeof value === 'string') {
+                localStorage.setItem(key, value);
+              } else {
+                localStorage.setItem(key, JSON.stringify(value));
+              }
+              importedCount++;
+            } catch (error) {
+              console.warn(`Could not import localStorage key: ${key}`, error);
+            }
+          });
+          
+          // Update watchlists state if it was imported
+          if (localStorageData.burnlist_watchlists) {
+            try {
+              const watchlistsData = typeof localStorageData.burnlist_watchlists === 'string' 
+                ? JSON.parse(localStorageData.burnlist_watchlists)
+                : localStorageData.burnlist_watchlists;
+              setWatchlists(watchlistsData);
+            } catch (error) {
+              console.warn('Could not parse watchlists data', error);
+            }
+          }
+          
+          // Update fetch count if it was imported
+          if (localStorageData.burnlist_fetch_count) {
+            try {
+              const fetchCountData = typeof localStorageData.burnlist_fetch_count === 'string'
+                ? parseInt(localStorageData.burnlist_fetch_count)
+                : localStorageData.burnlist_fetch_count;
+              setFetchCount(fetchCountData);
+            } catch (error) {
+              console.warn('Could not parse fetch count data', error);
+            }
+          }
+          
+          setNotification(`✅ Complete backup imported (${importedCount} keys)`, 'success');
+        } else {
+          // Handle old format for backward compatibility
+          if (!importedData.watchlists || typeof importedData.watchlists !== 'object') {
+            throw new Error('Invalid data format: missing watchlists');
+          }
+
+          // Import watchlists
+          setWatchlists(importedData.watchlists);
+          localStorage.setItem('burnlist_watchlists', JSON.stringify(importedData.watchlists));
+
+          // Import fetch count if available
+          if (importedData.fetchCount !== undefined) {
+            setFetchCount(importedData.fetchCount);
+            localStorage.setItem('burnlist_fetch_count', String(importedData.fetchCount));
+          }
+
+          // Import trade journal data if available
+          if (importedData.tradeJournalTrades && Array.isArray(importedData.tradeJournalTrades)) {
+            localStorage.setItem('trade_journal_trades', JSON.stringify(importedData.tradeJournalTrades));
+          }
+
+          setNotification('✅ Legacy data imported successfully', 'success');
         }
-
-        // Import watchlists
-        setWatchlists(importedData.watchlists);
-        localStorage.setItem('burnlist_watchlists', JSON.stringify(importedData.watchlists));
-
-        // Import fetch count if available
-        if (importedData.fetchCount !== undefined) {
-          setFetchCount(importedData.fetchCount);
-          localStorage.setItem('burnlist_fetch_count', String(importedData.fetchCount));
-        }
-
-        // Import trade journal data if available
-        if (importedData.tradeJournalTrades && Array.isArray(importedData.tradeJournalTrades)) {
-          localStorage.setItem('trade_journal_trades', JSON.stringify(importedData.tradeJournalTrades));
-        }
-
-        setNotification('✅ Data imported successfully', 'success');
       } catch (error) {
         console.error('Import error:', error);
         setNotification('❌ Import failed: Invalid file format', 'error');
