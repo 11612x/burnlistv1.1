@@ -113,7 +113,7 @@ export function getSlicedData(data, timeframe, buyDate, symbol = "?", buyPrice =
   }
 
   // For MAX timeframe: use buy date and buy price
-  // For all other timeframes: use timeframe start, regardless of buy date
+  // For all other timeframes: use the LATER of buy date or timeframe start
   const buyDateObj = new Date(buyDate || data[0]?.timestamp || now);
   
   let startDate;
@@ -124,14 +124,19 @@ export function getSlicedData(data, timeframe, buyDate, symbol = "?", buyPrice =
     startDate = buyDateObj;
     startPrice = (buyPrice && !isNaN(buyPrice)) ? Number(buyPrice) : data[0]?.price || 0;
   } else {
-    // All other timeframes: use timeframe start, not buy date
-    startDate = timeframeStart;
+    // All other timeframes: use the LATER of buy date or timeframe start
+    // This ensures recently bought stocks show performance from their buy date
+    startDate = buyDateObj > timeframeStart ? buyDateObj : timeframeStart;
     
-    // Find the closest data point to the timeframe start
+    // Find the closest data point to the effective start date
     const startIdx = binarySearchClosestIdx(data, startDate.getTime());
     startPrice = data[startIdx]?.price || 0;
     
-    console.log(`🔍 TIMEFRAME DEBUG ${symbol}: timeframe=${timeframe}, timeframeStart=${startDate.toISOString()}, found price=${startPrice} at index=${startIdx}`);
+    console.log(`🔍 TIMEFRAME DEBUG ${symbol}: timeframe=${timeframe}`);
+    console.log(`🔍 Buy date: ${buyDateObj.toISOString()}`);
+    console.log(`🔍 Timeframe start: ${timeframeStart?.toISOString() || 'now'}`);
+    console.log(`🔍 Effective start: ${startDate.toISOString()} (${startDate === buyDateObj ? 'using buy date' : 'using timeframe start'})`);
+    console.log(`🔍 Found price=${startPrice} at index=${startIdx}`);
   }
   
   // --- Binary search for startPoint ---
@@ -180,6 +185,11 @@ export function getSlicedData(data, timeframe, buyDate, symbol = "?", buyPrice =
     console.log(`✅ Buy date: ${buyDateObj.toISOString()}`);
     console.log(`✅ Timeframe start: ${timeframeStart?.toISOString() || 'now'}`);
     console.log(`✅ Effective start: ${startDate.toISOString()} → Price: ${startPoint.price}`);
+    if (startDate === buyDateObj) {
+      console.log(`✅ Using buy date (more recent than timeframe start)`);
+    } else {
+      console.log(`✅ Using timeframe start (buy date is older)`);
+    }
   }
   console.log(`✅ End: ${endPoint?.timestamp} → Price: ${endPoint?.price}`);
   if (startPoint && endPoint && startPoint.price && endPoint.price) {
