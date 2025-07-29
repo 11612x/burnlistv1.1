@@ -68,6 +68,20 @@ export async function fetchQuote(symbol, timeframe = 'd') {
     };
   } catch (error) {
     console.error(`❌ fetchQuote error for ${symbol}:`, error);
+    
+    // Log more details about the error
+    if (error.response) {
+      console.error(`❌ Server error for ${symbol}:`, {
+        status: error.response.status,
+        statusText: error.response.statusText,
+        data: error.response.data
+      });
+    } else if (error.request) {
+      console.error(`❌ Network error for ${symbol}:`, error.request);
+    } else {
+      console.error(`❌ Other error for ${symbol}:`, error.message);
+    }
+    
     return null;
   }
 }
