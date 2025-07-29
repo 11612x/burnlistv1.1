@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear LocalStorage</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .button { 
+            background: #ff4444; 
+            color: white; 
+            padding: 10px 20px; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            margin: 10px 0;
+        }
+        .success { color: green; }
+        .warning { color: orange; }
+    </style>
+</head>
+<body>
+    <h2>Clear Burnlist LocalStorage Data</h2>
+    <p class="warning">⚠️ This will permanently delete all your watchlists and data!</p>
+    
+    <button class="button" onclick="clearData()">🗑️ Clear All Data</button>
+    
+    <div id="status"></div>
+    
+    <script>
+        function clearData() {
+            const statusDiv = document.getElementById('status');
+            
+            // Clear all burnlist-related localStorage items
+            localStorage.removeItem('burnlist_watchlists');
+            localStorage.removeItem('burnlist_fetch_count');
+            localStorage.removeItem('trade_journal_trades');
+            
+            statusDiv.innerHTML = '<p class="success">✅ All data cleared successfully!</p>';
+            statusDiv.innerHTML += '<p>🔄 Please refresh your main application page to see the changes.</p>';
+            statusDiv.innerHTML += '<p>📝 You can now add new tickers and they will use the correct current prices.</p>';
+        }
+    </script>
+</body>
+</html> 

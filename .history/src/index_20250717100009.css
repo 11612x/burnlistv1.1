@@ -1,0 +1,18 @@
+body, html, #root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background-color: black;
+  color: #0de309;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+/* Remove spinner controls from number inputs (all browsers) */
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type=number] {
+  -moz-appearance: textfield;
+}
