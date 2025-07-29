@@ -234,6 +234,7 @@ const TickerTable = ({
             lookedUpBuyPrice = startPoint.price; // Use the looked-up price
             console.log(`[Table %] ${item.symbol}: startPoint: ${startPoint.price}, endPoint: ${endPoint.price}, changePercent: ${changePercent}%`);
             console.log(`[Table Price] ${item.symbol}: lookedUpBuyPrice: ${lookedUpBuyPrice}`);
+            console.log(`🔍 DEBUG ${item.symbol}: startPoint.price=${startPoint.price}, endPoint.price=${endPoint.price}, difference=${endPoint.price - startPoint.price}, calculation=${((endPoint.price - startPoint.price) / startPoint.price) * 100}`);
           }
 
           // Find the original index in the unsorted items array

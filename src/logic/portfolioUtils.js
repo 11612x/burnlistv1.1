@@ -194,7 +194,9 @@ export function getSlicedData(data, timeframe, buyDate, symbol = "?", buyPrice =
   }
   console.log(`✅ End: ${endPoint?.timestamp} → Price: ${endPoint?.price}`);
   if (startPoint && endPoint && startPoint.price && endPoint.price) {
-    console.log(`✅ Return: ${((endPoint.price - startPoint.price) / startPoint.price * 100).toFixed(2)}%`);
+    const calculatedReturn = ((endPoint.price - startPoint.price) / startPoint.price * 100);
+    console.log(`✅ Return: ${calculatedReturn.toFixed(2)}%`);
+    console.log(`🔍 DEBUG: startPoint.price=${startPoint.price}, endPoint.price=${endPoint.price}, difference=${endPoint.price - startPoint.price}`);
   }
 
   if (!startPoint) {
