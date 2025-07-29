@@ -113,8 +113,8 @@ const AddTickerInput = ({ bulkSymbols, setBulkSymbols, handleBulkAdd, buyDate, s
         
         // Add delay between requests to prevent rate limiting
         if (newItems.length > 0) {
-          console.log(`⏳ Waiting 300ms before next request...`);
-          await new Promise(resolve => setTimeout(resolve, 300));
+          console.log(`⏳ Waiting 5 seconds before next request...`);
+          await new Promise(resolve => setTimeout(resolve, 5000));
         }
         
         // Use buyPrice and buyDate only in editMode, otherwise let API assign defaults

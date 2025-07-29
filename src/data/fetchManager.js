@@ -279,8 +279,8 @@ export class FetchManager {
         
         // Add delay between requests to prevent rate limiting
         if (i > 0) {
-          console.log(`⏳ Waiting 500ms before next request...`);
-          await new Promise(resolve => setTimeout(resolve, 500));
+          console.log(`⏳ Waiting 5 seconds before next request...`);
+          await new Promise(resolve => setTimeout(resolve, 5000));
         }
         
         const finvizTimeframe = {
