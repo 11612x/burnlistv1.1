@@ -284,10 +284,18 @@ const BurnPage = () => {
       let closestDate = null;
       let minDiff = Infinity;
 
-      // First try to find exact date match
+      console.log(`🔍 Looking for price on ${buyDate.toISOString().split('T')[0]} for ${ticker.symbol}`);
+      console.log(`📊 Historical data points: ${historicalData.length}`);
+
+      // First try to find exact date match (using date part only)
       for (const dataPoint of historicalData) {
         const dataDate = new Date(dataPoint.timestamp);
-        if (dataDate.toDateString() === buyDate.toDateString()) {
+        const buyDateOnly = buyDate.toISOString().split('T')[0];
+        const dataDateOnly = dataDate.toISOString().split('T')[0];
+        
+        console.log(`🔍 Comparing: ${dataDateOnly} vs ${buyDateOnly}`);
+        
+        if (dataDateOnly === buyDateOnly) {
           historicalPrice = dataPoint.price;
           closestDate = dataPoint.timestamp;
           console.log(`✅ Found exact date match for ${ticker.symbol}: ${historicalPrice} at ${closestDate}`);
@@ -295,17 +303,28 @@ const BurnPage = () => {
         }
         
         // Track closest date if no exact match
-        const diff = Math.abs(dataDate - buyDate);
+        const diff = Math.abs(dataDate.getTime() - buyDate.getTime());
         if (diff < minDiff) {
           minDiff = diff;
           historicalPrice = dataPoint.price;
           closestDate = dataPoint.timestamp;
+          console.log(`📌 Closest match so far: ${historicalPrice} at ${closestDate} (diff: ${diff}ms)`);
         }
       }
 
       if (historicalPrice === null) {
         console.warn(`No historical price found for ${ticker.symbol} at ${ticker.buyDate}`);
         return;
+      }
+
+      // Log if we're using a closest match instead of exact match
+      const buyDateOnly = buyDate.toISOString().split('T')[0];
+      const closestDateOnly = new Date(closestDate).toISOString().split('T')[0];
+      
+      if (buyDateOnly !== closestDateOnly) {
+        console.log(`⚠️ No exact date match found for ${ticker.symbol}`);
+        console.log(`📅 Buy date: ${buyDateOnly}, Closest available: ${closestDateOnly}`);
+        console.log(`💰 Using closest price: ${historicalPrice} (from ${closestDate})`);
       }
 
       console.log(`📊 Updating ${ticker.symbol} buy price from ${ticker.buyPrice} to ${historicalPrice} (date: ${closestDate})`);
