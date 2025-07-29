@@ -266,6 +266,9 @@ export class FetchManager {
   async _processBatch(batch, allItems, abortController, slug, timeframe) {
     console.log(`🔄 Processing batch of ${batch.length} items`);
     
+    // Initialize updatedItems with a copy of allItems
+    const updatedItems = [...allItems];
+    
     for (let i = 0; i < batch.length; i++) {
       const item = batch[i];
       
