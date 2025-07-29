@@ -166,6 +166,20 @@ const WatchlistChart = ({ portfolioReturnData, height = 300, showTooltip = true,
           size: 11
         },
         callbacks: {
+          title: function(context) {
+            // Show the date for the data point
+            const dataIndex = context[0].dataIndex;
+            const point = chartData[dataIndex];
+            if (point && point.timestampValue) {
+              const date = new Date(point.timestampValue);
+              return date.toLocaleDateString('en-US', { 
+                month: 'short', 
+                day: 'numeric', 
+                year: 'numeric' 
+              });
+            }
+            return '';
+          },
           label: function(context) {
             return `Return: ${context.parsed.y.toFixed(2)}%`;
           }
