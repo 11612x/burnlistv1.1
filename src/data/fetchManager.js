@@ -3,16 +3,16 @@ import normalizeTicker from '@data/normalizeTicker';
 
 // Merge historical data arrays, removing duplicates and sorting by timestamp
 function mergeHistoricalData(existingData, newData) {
-  // Create a map of existing data by timestamp for quick lookup
+  // Create a map of existing data by full timestamp for quick lookup
   const existingMap = new Map();
   existingData.forEach(point => {
-    const key = new Date(point.timestamp).toISOString().split('T')[0]; // Date only
+    const key = point.timestamp; // Use full timestamp, not just date
     existingMap.set(key, point);
   });
   
-  // Add new data, overwriting existing entries with same date
+  // Add new data, overwriting existing entries with same timestamp
   newData.forEach(point => {
-    const key = new Date(point.timestamp).toISOString().split('T')[0]; // Date only
+    const key = point.timestamp; // Use full timestamp, not just date
     existingMap.set(key, point);
   });
   
@@ -20,6 +20,11 @@ function mergeHistoricalData(existingData, newData) {
   const merged = Array.from(existingMap.values()).sort((a, b) => 
     new Date(a.timestamp) - new Date(b.timestamp)
   );
+  
+  console.log(`🔍 MERGE DEBUG: Merged ${existingData.length} existing + ${newData.length} new = ${merged.length} total data points`);
+  if (merged.length > 0) {
+    console.log(`🔍 MERGE DEBUG: First timestamp: ${merged[0].timestamp}, Last timestamp: ${merged[merged.length - 1].timestamp}`);
+  }
   
   return merged;
 }
