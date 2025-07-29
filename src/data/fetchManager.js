@@ -167,118 +167,98 @@ export class FetchManager {
   /**
    * Start a new fetch or resume a paused one
    */
-  async startFetch(slug, items, updateCallback, isManual = false, bypassMarketClosed = false) {
-    // Check if market is open, unless bypass is requested
-    if (!isMarketOpen() && !bypassMarketClosed) {
-      if (isManual) {
-        return { success: false, message: "Market is closed" };
-      }
-      return { success: false, message: null };
+  async startFetch(slug, items, updateCallback, isManual = false, bypassMarketClosed = false, timeframe = 'D') {
+    console.log(`🚀 Starting fetch for ${slug} with ${items.length} items (manual: ${isManual}, timeframe: ${timeframe})`);
+    
+    // Check if market is closed (unless bypassed)
+    if (!bypassMarketClosed && !isMarketOpen()) {
+      console.log(`⏰ Market is closed. Skipping fetch for ${slug}`);
+      return { success: false, message: 'Market is closed' };
     }
 
-    // Check if there's already an active fetch
-    if (this.isFetchActive(slug)) {
-      if (isManual) {
-        return { success: false, message: "Fetch already in progress" };
-      }
-      return { success: false, message: null };
-    }
+    // Cancel any existing fetch for this slug
+    this.cancelFetch(slug);
 
-    // Check if there's a paused fetch to resume
-    const existingFetch = this.activeFetches.get(slug);
-    if (existingFetch && existingFetch.status === 'paused') {
-      await this.resumeFetch(slug, items, updateCallback);
-      return { success: true, message: null };
-    }
+    // Initialize fetch status
+    this.activeFetches.set(slug, {
+      status: 'active',
+      currentBatch: 0,
+      totalBatches: Math.ceil(items.length / 100),
+      abortController: new AbortController(),
+      timeframe: timeframe // Store timeframe for this fetch
+    });
 
-    // Start a new fetch
-    await this._executeFetch(slug, items, updateCallback, 0);
-    return { success: true, message: null };
+    try {
+      const result = await this._executeFetch(slug, items, updateCallback, 0, timeframe);
+      return result;
+    } catch (error) {
+      console.error(`❌ Fetch failed for ${slug}:`, error);
+      return { success: false, message: error.message };
+    }
   }
 
   /**
    * Execute the actual fetch process
    */
-  async _executeFetch(slug, items, updateCallback, startBatchIndex = 0) {
-    // Filter for real tickers only
-    const realTickers = items.filter(item => item.type === 'real' && !item.isMock);
-    if (realTickers.length === 0) return;
+  async _executeFetch(slug, items, updateCallback, startBatchIndex = 0, timeframe = 'D') {
+    const fetch = this.activeFetches.get(slug);
+    if (!fetch) {
+      throw new Error('No active fetch found');
+    }
 
-    const BATCH_SIZE = 100; // Increased batch size since no rate limits
-    const batches = splitIntoBatches(realTickers, BATCH_SIZE);
-    
-    // Create abort controller for this fetch
-    const abortController = new AbortController();
-    
-    // Reset watchlist request counter for this fetch
-    watchlistRequestCounts.set(slug, { count: 0, resetTime: Date.now() });
-    
-    // Initialize fetch state
-    this.activeFetches.set(slug, {
-      status: 'active',
-      currentBatch: startBatchIndex,
-      totalBatches: batches.length,
-      abortController
-    });
+    const { abortController } = fetch;
+    const batches = splitIntoBatches(items, 100);
+    let updatedItems = [...items];
 
     try {
-      // Process batches starting from startBatchIndex
-      for (let batchIndex = startBatchIndex; batchIndex < batches.length; batchIndex++) {
-        // Check if fetch was cancelled
+      for (let i = startBatchIndex; i < batches.length; i++) {
+        // Check for cancellation
         if (abortController.signal.aborted) {
-          this.activeFetches.delete(slug);
-          return;
+          throw new Error('Fetch cancelled');
         }
 
-        // Update current batch
-        const fetch = this.activeFetches.get(slug);
-        if (fetch) {
-          fetch.currentBatch = batchIndex + 1;
-        }
+        // Update fetch status
+        fetch.currentBatch = i;
+        fetch.totalBatches = batches.length;
 
-        const batch = batches[batchIndex];
-        const updatedItems = await this._processBatch(batch, items, abortController, slug);
-        
+        console.log(`📦 Processing batch ${i + 1}/${batches.length} for ${slug}`);
+
+        // Process this batch
+        const batchResult = await this._processBatch(batches[i], updatedItems, abortController, slug, timeframe);
+        updatedItems = batchResult;
+
         // Call update callback with current progress
         if (updateCallback && typeof updateCallback === 'function') {
-          // Calculate current ticker index
-          const tickersFetched = (batchIndex + 1) * BATCH_SIZE > realTickers.length ? realTickers.length : (batchIndex + 1) * BATCH_SIZE;
-          updateCallback(updatedItems, {
-            tickersFetched,
-            totalTickers: realTickers.length
-          });
+          const progress = {
+            tickersFetched: (i + 1) * 100,
+            totalTickers: items.length,
+            batch: i + 1,
+            totalBatches: batches.length
+          };
+          updateCallback(updatedItems, progress);
         }
 
-        // No delay between batches (unlimited requests)
+        // Small delay between batches to be nice to the API
+        if (i < batches.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
       }
 
-      // Fetch completed successfully
-      this.activeFetches.delete(slug);
-      // Reset watchlist request counter when fetch completes
-      watchlistRequestCounts.delete(slug);
+      // Mark fetch as complete
+      fetch.status = 'completed';
+      console.log(`✅ Fetch completed for ${slug}`);
+
+      return { success: true, message: null };
     } catch (error) {
-      if (error.name === 'AbortError') {
-        // Fetch was cancelled, clean up
-        this.activeFetches.delete(slug);
-        // Reset watchlist request counter when fetch is cancelled
-        watchlistRequestCounts.delete(slug);
-      } else {
-        console.error(`❌ Error in fetch for ${slug}:`, error);
-        // Mark as failed but keep state for potential retry
-        const fetch = this.activeFetches.get(slug);
-        if (fetch) {
-          fetch.status = 'failed';
-        }
-        // Reset watchlist request counter when fetch fails
-        watchlistRequestCounts.delete(slug);
-      }
+      fetch.status = 'error';
+      throw error;
     }
   }
 
   /**
    * Process a single batch of tickers
    */
-  async _processBatch(batch, allItems, abortController, slug) {
+  async _processBatch(batch, allItems, abortController, slug, timeframe) {
     const updatedItems = [...allItems];
     
     for (const item of batch) {
@@ -296,7 +276,18 @@ export class FetchManager {
         
         incrementGlobalRequestCounter();
         incrementWatchlistRequestCounter(slug);
-        const newTicker = await fetchQuote(item.symbol);
+        
+        // Convert timeframe to Finviz format
+        const finvizTimeframe = {
+          'D': 'd',
+          'W': 'w', 
+          'M': 'm',
+          'Y': 'y',
+          'YTD': 'ytd',
+          'MAX': 'max'
+        }[timeframe] || 'd';
+        
+        const newTicker = await fetchQuote(item.symbol, finvizTimeframe);
         
         // Validate that we got a proper ticker object
         if (!newTicker || typeof newTicker !== 'object' || !newTicker.historicalData || newTicker.historicalData.length === 0) {

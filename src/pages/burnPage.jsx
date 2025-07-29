@@ -96,7 +96,7 @@ const BurnPage = () => {
         const updated = { ...watchlists, [key]: updatedWatchlist };
         handleSetWatchlists(updated);
       }
-    }, manual, bypassMarketClosed);
+    }, manual, bypassMarketClosed, selectedTimeframe);
 
     if (result.success) {
       // Record the last refresh time for countdown timer

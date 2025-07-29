@@ -5,11 +5,11 @@ const FINVIZ_API_BASE = process.env.NODE_ENV === 'production'
   ? 'https://burnlist-api.onrender.com/api'
   : 'http://localhost:3001/api';
 
-export async function fetchQuote(symbol) {
+export async function fetchQuote(symbol, timeframe = 'd') {
   try {
     symbol = symbol.toUpperCase();
-    const url = `${FINVIZ_API_BASE}/finviz-quote?ticker=${symbol}&timeframe=d`;
-    console.log(`🌐 Requesting Finviz quote for symbol: ${symbol}`);
+    const url = `${FINVIZ_API_BASE}/finviz-quote?ticker=${symbol}&timeframe=${timeframe}`;
+    console.log(`🌐 Requesting Finviz quote for symbol: ${symbol} (timeframe: ${timeframe})`);
     
     const response = await axios.get(url);
     const data = response.data;

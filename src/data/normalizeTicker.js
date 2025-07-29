@@ -58,6 +58,8 @@ function normalizeTicker(ticker) {
     type: ticker.type || "real",
     isMock: Boolean(ticker.isMock),
     incomplete,
+    // Preserve currentPrice if it exists
+    ...(ticker.currentPrice !== undefined && { currentPrice: Number(ticker.currentPrice) }),
   };
 
   console.log("🧼 normalizeTicker →", normalizedTicker);
