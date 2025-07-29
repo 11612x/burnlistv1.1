@@ -1,7 +1,9 @@
 import axios from 'axios';
 
-// Finviz API server endpoint
-const FINVIZ_API_BASE = 'http://localhost:3001/api';
+// Finviz API server endpoint - use Render.com API in production
+const FINVIZ_API_BASE = process.env.NODE_ENV === 'production' 
+  ? 'https://burnlist-api.onrender.com/api'
+  : 'http://localhost:3001/api';
 
 export async function fetchQuote(symbol) {
   try {
