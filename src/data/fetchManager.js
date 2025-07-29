@@ -264,35 +264,30 @@ export class FetchManager {
    * Process a single batch of tickers
    */
   async _processBatch(batch, allItems, abortController, slug, timeframe) {
-    const updatedItems = [...allItems];
+    console.log(`🔄 Processing batch of ${batch.length} items`);
     
-    for (const item of batch) {
-      // Check for cancellation
+    for (let i = 0; i < batch.length; i++) {
+      const item = batch[i];
+      
       if (abortController.signal.aborted) {
-        throw new Error('Fetch cancelled');
+        console.log('🛑 Batch processing aborted');
+        break;
       }
 
       try {
-        // Check if we can make a request
-        if (!canMakeRequest()) {
-          console.warn(`⚠️ Rate limit reached for ${item.symbol}. Skipping request.`);
-          continue;
+        console.log(`📊 Processing item ${i + 1}/${batch.length}: ${item.symbol}`);
+        
+        // Add delay between requests to prevent rate limiting
+        if (i > 0) {
+          console.log(`⏳ Waiting 500ms before next request...`);
+          await new Promise(resolve => setTimeout(resolve, 500));
         }
         
-        incrementGlobalRequestCounter();
-        incrementWatchlistRequestCounter(slug);
-        
-        // Convert timeframe to Finviz format
         const finvizTimeframe = {
-          'D': 'd',
-          'W': 'w', 
-          'M': 'm',
-          'Y': 'y',
-          'YTD': 'ytd',
-          'MAX': 'max'
+          'D': 'd', 'W': 'w', 'M': 'm', 'Y': 'y', 'YTD': 'ytd', 'MAX': 'max'
         }[timeframe] || 'd';
         
-        const newTicker = await fetchQuote(item.symbol, finvizTimeframe);
+        const newTicker = await fetchQuote(item.symbol, finvizTimeframe); // Pass timeframe
         
         // Validate that we got a proper ticker object
         if (!newTicker || typeof newTicker !== 'object' || !newTicker.historicalData || newTicker.historicalData.length === 0) {
