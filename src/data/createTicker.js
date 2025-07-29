@@ -64,11 +64,10 @@ export async function createTicker(symbol, type = 'real', customBuyPrice = null,
       ticker.buyPrice = Number(customBuyPrice);
       console.log(`💰 Using custom buy price for ${symbol}: $${ticker.buyPrice}`);
     } else {
-      // Use current market price as buy price (only when first adding the ticker)
-      // Get the latest data point (last element in the array)
+      // Use current market price as buy price
       const latestDataPoint = ticker.historicalData[ticker.historicalData.length - 1];
       ticker.buyPrice = latestDataPoint.price;
-      console.log(`💰 Using current market price as buy price for ${symbol}: $${ticker.buyPrice} (this will stay fixed)`);
+      console.log(`💰 Using current market price as buy price for ${symbol}: $${ticker.buyPrice}`);
     }
     
     // Set buy date: use custom date if provided, otherwise use current market date
@@ -76,28 +75,30 @@ export async function createTicker(symbol, type = 'real', customBuyPrice = null,
       ticker.buyDate = customBuyDate;
       console.log(`📅 Using custom buy date for ${symbol}: ${ticker.buyDate}`);
     } else {
-      // Use current market date as buy date (only when first adding the ticker)
-      // Get the latest data point (last element in the array)
+      // Use current market date as buy date
       const latestDataPoint = ticker.historicalData[ticker.historicalData.length - 1];
       ticker.buyDate = latestDataPoint.timestamp;
-      console.log(`📅 Using current market date as buy date for ${symbol}: ${ticker.buyDate} (this will stay fixed)`);
+      console.log(`📅 Using current market date as buy date for ${symbol}: ${ticker.buyDate}`);
     }
     
-    // Create historical data with 2 points for charting when custom buy price/date is provided
+    // Only create additional historical data points when custom buy price/date is provided
     if ((customBuyPrice !== null && !isNaN(Number(customBuyPrice))) || (customBuyDate && !isNaN(Date.parse(customBuyDate)))) {
       // Add buy point as first data point
       const buyPoint = {
         price: ticker.buyPrice,
-        timestamp: ticker.buyDate
+        timestamp: ticker.buyDate,
+        fetchTimestamp: new Date().toISOString(),
+        symbol: symbol
       };
       
-      // Current market point as second data point (use latest data point)
+      // Current market point as second data point
       const currentPoint = ticker.historicalData[ticker.historicalData.length - 1];
       
       // Create historical data with both points
       ticker.historicalData = [buyPoint, currentPoint];
       console.log(`📊 Created 2-point historical data for ${symbol}:`, ticker.historicalData);
     }
+    // Otherwise, keep the single API data point as is
     
     ticker.addedAt = addedAt;
     ticker.type = 'real';

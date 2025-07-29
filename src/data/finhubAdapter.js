@@ -7,14 +7,9 @@ export async function fetchQuote(symbol, timeframe = 'd') {
   try {
     symbol = symbol.toUpperCase();
     
-    // Convert timeframe to Finnhub format
-    const finhubTimeframe = {
-      'd': 'D', 'w': 'W', 'm': 'M', 'y': 'Y', 'ytd': 'YTD', 'max': 'MAX'
-    }[timeframe] || 'D';
+    console.log(`🌐 Requesting Finnhub quote for symbol: ${symbol}`);
     
-    console.log(`🌐 Requesting Finnhub quote for symbol: ${symbol} (timeframe: ${timeframe})`);
-    
-    // Get current quote
+    // Get current quote only
     const quoteUrl = `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${API_KEY}`;
     const quoteResponse = await axios.get(quoteUrl);
     const quoteData = quoteResponse.data;
@@ -26,61 +21,22 @@ export async function fetchQuote(symbol, timeframe = 'd') {
     
     const currentPrice = Number(quoteData.c);
     const marketTimestamp = new Date(Number(quoteData.t) * 1000).toISOString();
+    const fetchTimestamp = new Date().toISOString();
     
-    // Get historical data
-    const now = Math.floor(Date.now() / 1000);
-    let from;
-    
-    switch (finhubTimeframe) {
-      case 'D':
-        from = now - (1 * 24 * 60 * 60); // 1 day ago
-        break;
-      case 'W':
-        from = now - (7 * 24 * 60 * 60); // 7 days ago
-        break;
-      case 'M':
-        from = now - (30 * 24 * 60 * 60); // 30 days ago
-        break;
-      case 'Y':
-        from = now - (365 * 24 * 60 * 60); // 1 year ago
-        break;
-      case 'YTD':
-        const currentYear = new Date().getFullYear();
-        from = Math.floor(new Date(currentYear, 0, 1).getTime() / 1000);
-        break;
-      case 'MAX':
-      default:
-        from = now - (5 * 365 * 24 * 60 * 60); // 5 years ago
-        break;
-    }
-    
-    const candleUrl = `https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=D&from=${from}&to=${now}&token=${API_KEY}`;
-    const candleResponse = await axios.get(candleUrl);
-    const candleData = candleResponse.data;
-    
-    console.log(`📥 Raw Finnhub data for ${symbol}:`, candleData);
-    console.log(`📊 Data length: ${candleData.t?.length || 0} records`);
-    
-    if (!candleData || !candleData.t || !Array.isArray(candleData.t) || candleData.t.length === 0) {
-      console.warn(`❗ No historical data for ${symbol}:`, candleData);
-      return null;
-    }
-    
-    // Convert Finnhub candle data to our format
-    const historicalData = candleData.t.map((timestamp, index) => ({
-      price: Number(candleData.c[index]),
-      timestamp: new Date(timestamp * 1000).toISOString(),
-      fetchTimestamp: new Date().toISOString(),
-      symbol: symbol
-    }));
-    
-    console.log(`📡 fetchQuote → ${symbol}: $${currentPrice} @ ${marketTimestamp} (${historicalData.length} data points)`);
+    console.log(`📡 fetchQuote → ${symbol}: $${currentPrice} @ ${marketTimestamp}`);
     
     return {
       symbol,
       buyPrice: currentPrice,
       buyDate: marketTimestamp,
-      historicalData: historicalData
+      historicalData: [
+        {
+          price: currentPrice,
+          timestamp: marketTimestamp,
+          fetchTimestamp: fetchTimestamp,
+          symbol: symbol
+        }
+      ]
     };
   } catch (error) {
     console.error(`❌ fetchQuote error for ${symbol}:`, error);
@@ -100,33 +56,8 @@ export async function fetchQuote(symbol, timeframe = 'd') {
 }
 
 export async function fetchHistoricalData(symbol, from, to) {
-  try {
-    symbol = symbol.toUpperCase();
-    const url = `https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=D&from=${from}&to=${to}&token=${API_KEY}`;
-    
-    console.log(`🌐 Requesting historical data for ${symbol} from ${from} to ${to}`);
-    
-    const response = await axios.get(url);
-    const data = response.data;
-    
-    if (!data || !data.t || !Array.isArray(data.t) || data.t.length === 0) {
-      console.warn(`❗ No historical data for ${symbol}:`, data);
-      return null;
-    }
-    
-    // Convert to our format
-    const historicalData = data.t.map((timestamp, index) => ({
-      price: Number(data.c[index]),
-      timestamp: new Date(timestamp * 1000).toISOString(),
-      fetchTimestamp: new Date().toISOString(),
-      symbol: symbol
-    }));
-    
-    console.log(`📡 fetchHistoricalData → ${symbol}: ${historicalData.length} data points`);
-    
-    return historicalData;
-  } catch (error) {
-    console.error(`❌ fetchHistoricalData error for ${symbol}:`, error);
-    return null;
-  }
+  // This function is kept for compatibility but returns null
+  // Historical data should only come from manual entries
+  console.log(`⚠️ fetchHistoricalData called for ${symbol} - historical data should be manual only`);
+  return null;
 }
