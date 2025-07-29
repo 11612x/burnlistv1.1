@@ -36,9 +36,13 @@ const TickerRow = ({
   // Always use latest price for Current Price
   const latestRaw = item.historicalData.at(-1)?.price;
   const latestPrice = !isNaN(Number(latestRaw)) ? Number(latestRaw) : NaN;
+  
+  // Use currentPrice field if available, otherwise use latest historical price
+  const currentPrice = typeof item.currentPrice === 'number' ? item.currentPrice : latestPrice;
 
   console.log(`💵 Buy price for ${item.symbol}:`, buy);
   console.log(`📈 Latest price for ${item.symbol}:`, latestPrice);
+  console.log(`💰 Current price for ${item.symbol}:`, currentPrice);
 
   if (isNaN(buy)) {
     console.warn(`\u26d4 Skipping row: No valid buy price resolved for ${item.symbol}`);
@@ -168,7 +172,7 @@ const TickerRow = ({
       </td>
       {/* Current Price: always latest price */}
       <td style={{ padding: 8, fontFamily: "'Courier New', Courier, monospace", color: green, fontSize: 15 }}>
-        {!isNaN(latestPrice) ? latestPrice.toFixed(2) : "-"}
+        {!isNaN(currentPrice) ? currentPrice.toFixed(2) : "-"}
       </td>
       {/* % Change: still updates per timeframe */}
       <td style={{ padding: 8, fontFamily: "'Courier New', Courier, monospace", color: green, fontSize: 15 }}>

@@ -328,16 +328,21 @@ export class FetchManager {
         // Update the ticker with appended data
         const updatedTicker = {
           ...item,
-          historicalData: updatedHistoricalData,
+          historicalData: filteredHistoricalData,
         };
+
+        // Get the latest price from the updated historical data
+        const latestDataPoint = filteredHistoricalData[filteredHistoricalData.length - 1];
+        const currentPrice = latestDataPoint ? latestDataPoint.price : item.buyPrice;
 
         const normalized = {
           ...normalizeTicker(updatedTicker),
-          buyPrice: item.buyPrice,
-          buyDate: item.buyDate,
+          buyPrice: item.buyPrice, // Keep original buy price
+          buyDate: item.buyDate,   // Keep original buy date
           type: item.type,
           isMock: item.isMock,
           addedAt: item.addedAt,
+          currentPrice: currentPrice, // Add current market price
         };
 
         // Update the item in the array
