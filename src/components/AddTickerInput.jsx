@@ -137,11 +137,6 @@ const AddTickerInput = ({ bulkSymbols, setBulkSymbols, handleBulkAdd, buyDate, s
         
         console.log(`✅ createTicker succeeded for ${symbol}:`, item);
         
-        if (fallbackFromApi && item?.historicalData?.[0]?.price) {
-          item.buyPrice = Number(item.historicalData[0].price);
-          console.log(`💰 Updated buyPrice for ${symbol} to ${item.buyPrice}`);
-        }
-        
         // Skip tickers with invalid buyPrice
         if (typeof item.buyPrice !== 'number' || item.buyPrice === 0) {
           console.warn(`❌ Skipping ${symbol}: buyPrice is still 0 after fetch.`);
