@@ -48,11 +48,16 @@ export async function createTicker(symbol, type = 'real', customBuyPrice = null,
     }
 
     // Handle real ticker via API
+    console.log(`🌐 Fetching real ticker data for ${symbol}`);
     const ticker = await fetchQuote(symbol);
+    console.log(`📥 fetchQuote result for ${symbol}:`, ticker ? 'success' : 'failed');
+    
     if (!ticker || typeof ticker !== 'object' || !ticker.symbol || !ticker.historicalData) {
       console.warn(`⚠️ Skipping ${symbol}: malformed ticker object`, ticker);
       return null;
     }
+    
+    console.log(`✅ Valid ticker data received for ${symbol}, historicalData length: ${ticker.historicalData.length}`);
     
     // Set buy price: use custom price if provided, otherwise use current market price
     if (customBuyPrice !== null && !isNaN(Number(customBuyPrice))) {

@@ -99,8 +99,13 @@ const AddTickerInput = ({ bulkSymbols, setBulkSymbols, handleBulkAdd, buyDate, s
       console.log("💵 With Buy Price:", buyPrice);
 
       const newItems = [];
+      console.log(`🔍 Processing ${validSymbols.length} valid symbols:`, validSymbols);
+      
       for (const rawSymbol of validSymbols) {
+        console.log(`🔄 Processing symbol: ${rawSymbol}`);
         const symbol = normalizeSymbol(rawSymbol);
+        console.log(`📝 Normalized symbol: ${symbol}`);
+        
         if (existingSymbols.has(symbol)) {
           console.warn(`⚠️ Skipping duplicate symbol: ${symbol}`);
           continue;
@@ -111,6 +116,7 @@ const AddTickerInput = ({ bulkSymbols, setBulkSymbols, handleBulkAdd, buyDate, s
         const fallbackFromApi = !editMode && !price;
         const date = editMode && buyDate ? buyDate : undefined;
 
+        console.log(`📞 Calling createTicker for ${symbol} with price=${price}, date=${date}`);
         const item = await createTicker(
           symbol,
           symbol.startsWith("#") ? "mock" : "real",
@@ -123,8 +129,11 @@ const AddTickerInput = ({ bulkSymbols, setBulkSymbols, handleBulkAdd, buyDate, s
           continue;
         }
         
+        console.log(`✅ createTicker succeeded for ${symbol}:`, item);
+        
         if (fallbackFromApi && item?.historicalData?.[0]?.price) {
           item.buyPrice = Number(item.historicalData[0].price);
+          console.log(`💰 Updated buyPrice for ${symbol} to ${item.buyPrice}`);
         }
         
         // Skip tickers with invalid buyPrice
@@ -134,12 +143,15 @@ const AddTickerInput = ({ bulkSymbols, setBulkSymbols, handleBulkAdd, buyDate, s
         }
         
         if (item) {
-          console.log("🔍 Created item buyPrice check:", item.symbol, item.buyPrice);
+          console.log(`✅ Adding ${symbol} to newItems with buyPrice: ${item.buyPrice}`);
           newItems.push(item);
         } else {
           console.warn("❌ Failed to create ticker:", symbol);
         }
       }
+
+      console.log(`📊 Final newItems count: ${newItems.length}/${validSymbols.length}`);
+      console.log(`📋 Final newItems:`, newItems.map(item => ({ symbol: item.symbol, buyPrice: item.buyPrice })));
 
       if (newItems.length === 0) {
         if (setNotification && setNotificationType) {
