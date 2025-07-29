@@ -89,15 +89,19 @@ export function getSlicedData(data, timeframe, buyDate, symbol = "?", buyPrice =
   let timeframeStart;
   switch (normalizedTimeframe) {
     case "D":
+      // Use start of today (midnight) for daily calculations
       timeframeStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       break;
     case "WEEK":
+      // Use exactly 7 days ago at the same time
       timeframeStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
       break;
     case "MONTH":
+      // Use exactly 31 days ago at the same time
       timeframeStart = new Date(now.getTime() - 31 * 24 * 60 * 60 * 1000);
       break;
     case "YEAR":
+      // Use exactly 365 days ago at the same time
       timeframeStart = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
       break;
     case "YTD":
@@ -108,19 +112,28 @@ export function getSlicedData(data, timeframe, buyDate, symbol = "?", buyPrice =
       timeframeStart = null;
   }
 
-  // Always start from buy date with buy price (static, never changes)
+  // For MAX timeframe: use buy date and buy price
+  // For all other timeframes: use timeframe start, regardless of buy date
   const buyDateObj = new Date(buyDate || data[0]?.timestamp || now);
   
-  // Find timeframe end date (how far back from now we want to look)
-  let timeframeEndDate = now;
-  if (timeframeStart && timeframeStart.getTime() > buyDateObj.getTime()) {
-    // If timeframe start is after buy date, we show partial performance within timeframe
-    timeframeEndDate = now;
+  let startDate;
+  let startPrice;
+  
+  if (timeframe === 'MAX') {
+    // MAX timeframe: use buy date and buy price
+    startDate = buyDateObj;
+    startPrice = (buyPrice && !isNaN(buyPrice)) ? Number(buyPrice) : data[0]?.price || 0;
   } else {
-    // If timeframe start is before buy date, we show from buy date to now
-    timeframeEndDate = now;
+    // All other timeframes: use timeframe start, not buy date
+    startDate = timeframeStart;
+    
+    // Find the closest data point to the timeframe start
+    const startIdx = binarySearchClosestIdx(data, startDate.getTime());
+    startPrice = data[startIdx]?.price || 0;
+    
+    console.log(`🔍 TIMEFRAME DEBUG ${symbol}: timeframe=${timeframe}, timeframeStart=${startDate.toISOString()}, found price=${startPrice} at index=${startIdx}`);
   }
-
+  
   // --- Binary search for startPoint ---
   function binarySearchClosestIdx(arr, target) {
     let left = 0;
@@ -148,30 +161,6 @@ export function getSlicedData(data, timeframe, buyDate, symbol = "?", buyPrice =
 
   let startPoint = null;
   let endPoint = null;
-
-  // Determine start point based on timeframe
-  let startDate;
-  let startPrice;
-  
-  if (timeframe === 'MAX') {
-    // MAX timeframe: use buy date and buy price
-    startDate = buyDateObj;
-    startPrice = (buyPrice && !isNaN(buyPrice)) ? Number(buyPrice) : data[0]?.price || 0;
-  } else {
-    // Other timeframes: use the LATER of buy date or timeframe start
-    // This ensures we don't try to get data before the stock was added
-    const timeframeStartDate = timeframeStart || now;
-    startDate = new Date(Math.max(buyDateObj.getTime(), timeframeStartDate.getTime()));
-    
-    // If we're starting from buy date, use buy price
-    if (startDate.getTime() === buyDateObj.getTime()) {
-      startPrice = (buyPrice && !isNaN(buyPrice)) ? Number(buyPrice) : data[0]?.price || 0;
-    } else {
-      // Otherwise use price from the start date
-      const startIdx = binarySearchClosestIdx(data, startDate.getTime());
-      startPrice = data[startIdx]?.price || 0;
-    }
-  }
   
   // Find the start point data
   const startIdx = binarySearchClosestIdx(data, startDate.getTime());

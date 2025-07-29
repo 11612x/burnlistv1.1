@@ -36,9 +36,15 @@ export async function fetchQuote(symbol, timeframe = 'd') {
         return null;
       }
       
+      // Create timestamp with fetch time included
+      const fetchTimestamp = new Date();
+      const dataTimestamp = new Date(date);
+      
       return {
         price: price,
-        timestamp: new Date(date).toISOString()
+        timestamp: dataTimestamp.toISOString(),
+        fetchTimestamp: fetchTimestamp.toISOString(), // Track when this data was fetched
+        symbol: symbol
       };
     }).filter(point => point !== null);
 
@@ -90,9 +96,15 @@ export async function fetchHistoricalData(symbol, timeframe = 'd') {
         return null;
       }
       
+      // Create timestamp with fetch time included
+      const fetchTimestamp = new Date();
+      const dataTimestamp = new Date(date);
+      
       return {
         price: price,
-        timestamp: new Date(date).toISOString()
+        timestamp: dataTimestamp.toISOString(),
+        fetchTimestamp: fetchTimestamp.toISOString(), // Track when this data was fetched
+        symbol: symbol
       };
     }).filter(point => point !== null);
 
