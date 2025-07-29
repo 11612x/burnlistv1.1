@@ -1,0 +1,26 @@
+services:
+  # Frontend Static Site
+  - type: web
+    name: burnlist-frontend
+    env: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    routes:
+      - type: rewrite
+        source: /api/*
+        destination: https://burnlist-api.onrender.com/api/*
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+  # Backend API Service
+  - type: web
+    name: burnlist-api
+    env: node
+    buildCommand: npm install
+    startCommand: node finviz-api-server.cjs
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: FINVIZ_API_TOKEN
+        sync: false
