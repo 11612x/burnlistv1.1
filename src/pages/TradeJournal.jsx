@@ -8,6 +8,7 @@ import yellowflag from '../assets/yellowflag.png';
 import redflag from '../assets/redflag.png';
 import backbutton from '../assets/backbutton.png';
 import useNotification from '../hooks/useNotification';
+import { getCachedExchange } from '../utils/exchangeDetector';
 
 const CRT_GREEN = 'rgb(140,185,162)';
 
@@ -58,10 +59,22 @@ const TradeJournal = () => {
   };
 
   // Function to open ticker chart in new tab
-  const handleTickerClick = (symbol) => {
+  const handleTickerClick = async (symbol) => {
     if (!symbol) return;
-    const chartUrl = `https://elite.finviz.com/charts?t=${symbol.toUpperCase()}&p=d&l=1h1v`;
-    window.open(chartUrl, '_blank');
+    
+    try {
+      // Get the correct exchange for this symbol
+      const exchange = await getCachedExchange(symbol);
+      const encodedSymbol = encodeURIComponent(`${exchange}:${symbol.toUpperCase()}`);
+      const chartUrl = `https://www.tradingview.com/chart/i0seCgVv/?symbol=${encodedSymbol}`;
+      window.open(chartUrl, '_blank');
+    } catch (error) {
+      console.warn(`⚠️ Error opening chart for ${symbol}:`, error);
+      // Fallback to NASDAQ if there's an error
+      const encodedSymbol = encodeURIComponent(`NASDAQ:${symbol.toUpperCase()}`);
+      const chartUrl = `https://www.tradingview.com/chart/i0seCgVv/?symbol=${encodedSymbol}`;
+      window.open(chartUrl, '_blank');
+    }
   };
 
   // Calculate trade statistics
@@ -473,6 +486,9 @@ const TradeJournal = () => {
                   <th style={{ padding: '0px', textAlign: 'center', borderRight: `1px solid ${CRT_GREEN}`, height: '40px', minHeight: '40px', maxHeight: '40px', lineHeight: '24px', boxSizing: 'border-box', verticalAlign: 'middle', overflow: 'hidden' }}>
                     Date
                   </th>
+                  <th style={{ padding: '0px', textAlign: 'center', borderRight: `1px solid ${CRT_GREEN}`, height: '40px', minHeight: '40px', maxHeight: '40px', lineHeight: '24px', boxSizing: 'border-box', verticalAlign: 'middle', overflow: 'hidden' }}>
+                    Price Source
+                  </th>
                   {editMode && (
                     <th style={{ padding: '0px', textAlign: 'center', height: '40px', minHeight: '40px', maxHeight: '40px', lineHeight: '24px', boxSizing: 'border-box', verticalAlign: 'middle', overflow: 'hidden' }}>
                       Actions
@@ -557,6 +573,16 @@ const TradeJournal = () => {
                        </td>
                        <td style={{ padding: '0px', textAlign: 'center', borderRight: `1px solid ${CRT_GREEN}`, height: '40px', minHeight: '40px', maxHeight: '40px', lineHeight: '24px', boxSizing: 'border-box', verticalAlign: 'middle', overflow: 'hidden' }}>
                          ${trade.entryPrice ? trade.entryPrice.toFixed(2) : 'N/A'}
+                         {trade.currentMarketPrice && (
+                           <div style={{ 
+                             fontSize: '10px', 
+                             color: '#666', 
+                             marginTop: '2px',
+                             fontStyle: 'italic'
+                           }}>
+                             Market: ${trade.currentMarketPrice.toFixed(2)}
+                           </div>
+                         )}
                        </td>
                        <td style={{ padding: '0px', textAlign: 'center', borderRight: `1px solid ${CRT_GREEN}`, height: '40px', minHeight: '40px', maxHeight: '40px', lineHeight: '24px', boxSizing: 'border-box', verticalAlign: 'middle', overflow: 'hidden' }}>
                          ${trade.stopLoss ? trade.stopLoss.toFixed(2) : 'N/A'}
@@ -569,6 +595,9 @@ const TradeJournal = () => {
                        </td>
                        <td style={{ padding: '0px', textAlign: 'center', borderRight: `1px solid ${CRT_GREEN}`, height: '40px', minHeight: '40px', maxHeight: '40px', lineHeight: '24px', boxSizing: 'border-box', verticalAlign: 'middle', overflow: 'hidden' }}>
                          {trade.executedAt ? formatDate(trade.executedAt) : formatDate(trade.date)}
+                       </td>
+                       <td style={{ padding: '0px', textAlign: 'center', borderRight: `1px solid ${CRT_GREEN}`, height: '40px', minHeight: '40px', maxHeight: '40px', lineHeight: '24px', boxSizing: 'border-box', verticalAlign: 'middle', overflow: 'hidden' }}>
+                         {trade.priceSource || 'Manual'}
                        </td>
                        {editMode && (
                          <td style={{ padding: '8px', textAlign: 'center', height: '40px', minHeight: '40px', maxHeight: '40px', lineHeight: '24px', boxSizing: 'border-box', verticalAlign: 'middle', overflow: 'hidden' }}>

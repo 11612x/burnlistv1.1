@@ -16,6 +16,7 @@ import box from '../assets/box.png';
 import checkbox from '../assets/checkbox.png';
 import { formatDateEuropean } from '../utils/dateUtils';
 import useNotification from '../hooks/useNotification';
+import { getCachedExchange } from '../utils/exchangeDetector';
 
 const CRT_GREEN = 'rgb(140,185,162)';
 
@@ -163,6 +164,8 @@ const UniverseScreenerPage = () => {
   const [overrideReason, setOverrideReason] = useState("");
   const [editMode, setEditMode] = useState(false);
   const [selectedRows, setSelectedRows] = useState(new Set());
+  const [currentMarketPrice, setCurrentMarketPrice] = useState(null);
+  const [isFetchingPrice, setIsFetchingPrice] = useState(false);
 
   // Load universes and find the specific universe on mount
   useEffect(() => {
@@ -572,29 +575,57 @@ const UniverseScreenerPage = () => {
   const handleJournalClick = (item) => {
     setJournalTicker(item);
     setJournalPanelOpen(true);
-
-    // Load previously saved journal data or set defaults
     setSelectedTradeType(item.tradeType || "");
-    setEntryPrice(item.entryPrice ? item.entryPrice.toString() : (item.lastPrice ? item.lastPrice.toString() : ""));
-    setStopLoss(item.stopLoss ? item.stopLoss.toString() : "");
-    setTarget(item.target ? item.target.toString() : "");
-    setAccountSize(item.accountSize ? item.accountSize.toString() : "");
-    setRiskPerTrade(item.riskPerTrade ? item.riskPerTrade.toString() : "2");
+    setEntryPrice(item.entryPrice || "");
+    setStopLoss(item.stopLoss || "");
+    setTarget(item.target || "");
+    setAccountSize(item.accountSize || "");
+    setRiskPerTrade(item.riskPerTrade || "2");
     setOverrideReason(item.overrideReason || "");
-    // Load previously saved checklist items or create new ones
-    if (item.checklistItems && Object.keys(item.checklistItems).length > 0) {
-      setChecklistItems(item.checklistItems);
-    } else if (item.tradeType && SETUP_CONFIGS[item.tradeType]) {
-      const newChecklist = {};
-      SETUP_CONFIGS[item.tradeType].checklists.forEach(checkItem => {
-        newChecklist[checkItem] = false;
+    
+    // Load checklist items from item
+    const savedChecklist = {};
+    if (item.tradeType && SETUP_CONFIGS[item.tradeType]) {
+      const allChecklistItems = [
+        ...SETUP_CONFIGS[item.tradeType].checklists,
+        ...SETUP_CONFIGS[item.tradeType].newsValidation
+      ];
+      allChecklistItems.forEach(checkItem => {
+        if (item.notes && item.notes.includes(checkItem)) {
+          savedChecklist[checkItem] = true;
+        }
       });
-      SETUP_CONFIGS[item.tradeType].newsValidation.forEach(checkItem => {
-        newChecklist[checkItem] = false;
-      });
-      setChecklistItems(newChecklist);
-    } else {
-      setChecklistItems({});
+    }
+    setChecklistItems(savedChecklist);
+    
+    // Fetch current market price
+    fetchCurrentMarketPrice(item.symbol);
+  };
+
+  const fetchCurrentMarketPrice = async (symbol) => {
+    if (!symbol) return;
+    
+    setIsFetchingPrice(true);
+    try {
+      const response = await fetch(`http://localhost:3002/api/twelvedata-quote?symbols=${symbol}&interval=1min`);
+      
+      if (response.ok) {
+        const priceData = await response.json();
+        if (priceData && priceData.length > 0) {
+          setCurrentMarketPrice(priceData[0].price);
+        } else {
+          console.warn(`No price data received for ${symbol}`);
+          setCurrentMarketPrice(null);
+        }
+      } else {
+        console.warn(`API error for ${symbol}: ${response.status}`);
+        setCurrentMarketPrice(null);
+      }
+    } catch (error) {
+      console.error("Error fetching current market price:", error);
+      setCurrentMarketPrice(null);
+    } finally {
+      setIsFetchingPrice(false);
     }
   };
 
@@ -678,7 +709,7 @@ const UniverseScreenerPage = () => {
   }, [selectedTradeType, journalPanelOpen]);
 
   // When trade type changes in the journal panel, clear all journal fields for that ticker
-  const handleExecuteTrade = (item) => {
+  const handleExecuteTrade = async (item) => {
     if (!item.tradeType || !item.entryPrice || !item.stopLoss || !item.target) {
       setNotification("Complete journal entry first");
       setNotificationType("error");
@@ -686,8 +717,41 @@ const UniverseScreenerPage = () => {
     }
 
     try {
-      // Calculate risk:reward ratio
-      const entry = parseFloat(item.entryPrice);
+      setNotification("Fetching latest price from Twelve Data API...");
+      setNotificationType("loading");
+
+      let currentMarketPrice = null;
+      let useCurrentPrice = false;
+      
+      try {
+        // Fetch latest price from Twelve Data API
+        const response = await fetch(`http://localhost:3002/api/twelvedata-quote?symbols=${item.symbol}&interval=1min`);
+        
+        if (response.ok) {
+          const priceData = await response.json();
+          
+          if (priceData && priceData.length > 0) {
+            currentMarketPrice = priceData[0].price;
+            console.log(`📊 Latest price for ${item.symbol}: $${currentMarketPrice}`);
+            
+            // Ask user if they want to use current market price or keep manual entry
+            useCurrentPrice = window.confirm(
+              `Current market price for ${item.symbol}: $${currentMarketPrice.toFixed(2)}\n\n` +
+              `Your entered price: $${parseFloat(item.entryPrice).toFixed(2)}\n\n` +
+              `Would you like to use the current market price instead?`
+            );
+          }
+        }
+      } catch (apiError) {
+        console.warn("Twelve Data API not available, using manual entry price:", apiError);
+        setNotification("Using manual entry price (API unavailable)");
+        setNotificationType("info");
+      }
+      
+      const finalEntryPrice = useCurrentPrice ? currentMarketPrice : parseFloat(item.entryPrice);
+      
+      // Calculate risk:reward ratio with final entry price
+      const entry = finalEntryPrice;
       const stop = parseFloat(item.stopLoss);
       const target = parseFloat(item.target);
       const risk = Math.abs(entry - stop);
@@ -702,14 +766,16 @@ const UniverseScreenerPage = () => {
         riskReward: riskReward,
         verdict: item.journalVerdict || 'Not journaled',
         outcome: 'Open',
-        entryPrice: parseFloat(item.entryPrice),
+        entryPrice: finalEntryPrice,
         stopLoss: parseFloat(item.stopLoss),
         target: parseFloat(item.target),
         positionSize: item.positionSize,
         accountSize: item.accountSize,
         riskPerTrade: item.riskPerTrade,
         executedAt: new Date().toISOString(),
-        notes: item.notes || ''
+        notes: item.notes || '',
+        currentMarketPrice: currentMarketPrice, // Store the current market price for reference
+        priceSource: useCurrentPrice ? 'Twelve Data API' : (currentMarketPrice ? 'Manual Entry (API Available)' : 'Manual Entry (API Unavailable)')
       };
 
       // Load existing trades from localStorage
@@ -721,12 +787,18 @@ const UniverseScreenerPage = () => {
       // Save back to localStorage
       localStorage.setItem("trade_journal_trades", JSON.stringify(updatedTrades));
       
-      setNotification(`Trade executed: ${item.symbol} logged to journal`);
+      const priceMessage = useCurrentPrice 
+        ? ` (updated to current market price: $${currentMarketPrice.toFixed(2)})`
+        : currentMarketPrice 
+          ? ` (using manual entry: $${parseFloat(item.entryPrice).toFixed(2)})`
+          : ` (using manual entry: $${parseFloat(item.entryPrice).toFixed(2)})`;
+      
+      setNotification(`Trade executed: ${item.symbol} logged to journal${priceMessage}`);
       setNotificationType("success");
       
     } catch (error) {
       console.error("Error executing trade:", error);
-      setNotification("Failed to execute trade");
+      setNotification(`Failed to execute trade: ${error.message}`);
       setNotificationType("error");
     }
   };
@@ -783,10 +855,22 @@ const UniverseScreenerPage = () => {
   };
 
   // Function to open ticker chart in new tab
-  const handleTickerClick = (symbol) => {
+  const handleTickerClick = async (symbol) => {
     if (!symbol) return;
-    const chartUrl = `https://elite.finviz.com/charts?t=${symbol.toUpperCase()}&p=d&l=1h1v`;
-    window.open(chartUrl, '_blank');
+    
+    try {
+      // Get the correct exchange for this symbol
+      const exchange = await getCachedExchange(symbol);
+      const encodedSymbol = encodeURIComponent(`${exchange}:${symbol.toUpperCase()}`);
+      const chartUrl = `https://www.tradingview.com/chart/i0seCgVv/?symbol=${encodedSymbol}`;
+      window.open(chartUrl, '_blank');
+    } catch (error) {
+      console.warn(`⚠️ Error opening chart for ${symbol}:`, error);
+      // Fallback to NASDAQ if there's an error
+      const encodedSymbol = encodeURIComponent(`NASDAQ:${symbol.toUpperCase()}`);
+      const chartUrl = `https://www.tradingview.com/chart/i0seCgVv/?symbol=${encodedSymbol}`;
+      window.open(chartUrl, '_blank');
+    }
   };
 
   return (
@@ -1539,6 +1623,57 @@ const UniverseScreenerPage = () => {
                           fontFamily: 'Courier New'
                         }}
                       />
+                      {/* Current Market Price Display */}
+                      {isFetchingPrice ? (
+                        <div style={{ 
+                          fontSize: '12px', 
+                          color: CRT_GREEN, 
+                          marginTop: '4px',
+                          fontStyle: 'italic'
+                        }}>
+                          🔄 Fetching current market price...
+                        </div>
+                      ) : currentMarketPrice ? (
+                        <div style={{ 
+                          fontSize: '12px', 
+                          color: CRT_GREEN, 
+                          marginTop: '4px',
+                          padding: '4px 8px',
+                          border: `1px solid ${CRT_GREEN}`,
+                          borderRadius: '2px',
+                          background: 'rgba(140,185,162,0.1)'
+                        }}>
+                          📊 Current Market: ${currentMarketPrice.toFixed(2)}
+                          <button
+                            onClick={() => {
+                              setEntryPrice(currentMarketPrice.toFixed(2));
+                              setNotification(`Entry price updated to current market price: $${currentMarketPrice.toFixed(2)}`);
+                              setNotificationType("success");
+                            }}
+                            style={{
+                              marginLeft: '8px',
+                              background: 'transparent',
+                              border: `1px solid ${CRT_GREEN}`,
+                              color: CRT_GREEN,
+                              padding: '2px 6px',
+                              fontSize: '10px',
+                              cursor: 'pointer',
+                              fontFamily: 'Courier New'
+                            }}
+                          >
+                            USE
+                          </button>
+                        </div>
+                      ) : (
+                        <div style={{ 
+                          fontSize: '12px', 
+                          color: '#666', 
+                          marginTop: '4px',
+                          fontStyle: 'italic'
+                        }}>
+                          Unable to fetch current market price
+                        </div>
+                      )}
                     </div>
                     <div>
                       <label style={{ display: 'block', marginBottom: '5px' }}>Stop Loss:</label>
