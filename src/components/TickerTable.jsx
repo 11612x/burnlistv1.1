@@ -50,7 +50,7 @@ const TickerTable = ({
   const sortedItems = useSortedItems(items, sortConfig);
 
   // Calculate average return from sorted items using custom hook
-  const averageReturn = useAverageReturn(sortedItems);
+  const averageReturn = useAverageReturn(sortedItems, selectedTimeframe);
 
   // Debug average return value
   console.log("\ud83d\udcca Average return from sortedItems:", averageReturn);
@@ -227,14 +227,16 @@ const TickerTable = ({
           let changePercent = 0;
           let lookedUpBuyPrice = item.buyPrice; // Default to original buy price
           
-
-          
-          if (startPoint && endPoint && typeof startPoint.price === "number" && typeof endPoint.price === "number" && startPoint.price > 0) {
-            changePercent = ((endPoint.price - startPoint.price) / startPoint.price) * 100;
+          if (startPoint && typeof startPoint.price === "number" && startPoint.price > 0) {
+            // Use currentPrice if available (from auto-fetch), otherwise use endPoint
+            const currentPrice = typeof item.currentPrice === 'number' ? item.currentPrice : (endPoint?.price || item.buyPrice);
+            
+            changePercent = ((currentPrice - startPoint.price) / startPoint.price) * 100;
             lookedUpBuyPrice = startPoint.price; // Use the looked-up price
-            console.log(`[Table %] ${item.symbol}: startPoint: ${startPoint.price}, endPoint: ${endPoint.price}, changePercent: ${changePercent}%`);
+            console.log(`[Table %] ${item.symbol}: startPoint: ${startPoint.price}, currentPrice: ${currentPrice}, changePercent: ${changePercent}%`);
             console.log(`[Table Price] ${item.symbol}: lookedUpBuyPrice: ${lookedUpBuyPrice}`);
-            console.log(`🔍 DEBUG ${item.symbol}: startPoint.price=${startPoint.price}, endPoint.price=${endPoint.price}, difference=${endPoint.price - startPoint.price}, calculation=${((endPoint.price - startPoint.price) / startPoint.price) * 100}`);
+            console.log(`🔍 DEBUG ${item.symbol}: startPoint.price=${startPoint.price}, currentPrice=${currentPrice}, difference=${currentPrice - startPoint.price}, calculation=${((currentPrice - startPoint.price) / startPoint.price) * 100}`);
+            console.log(`🔍 Using ${typeof item.currentPrice === 'number' ? 'currentPrice from auto-fetch' : 'historical data'} for ${item.symbol}`);
           }
 
           // Find the original index in the unsorted items array
