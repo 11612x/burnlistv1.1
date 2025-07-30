@@ -575,28 +575,31 @@ const UniverseScreenerPage = () => {
   const handleJournalClick = (item) => {
     setJournalTicker(item);
     setJournalPanelOpen(true);
+
+    // Load previously saved journal data or set defaults
     setSelectedTradeType(item.tradeType || "");
-    setEntryPrice(item.entryPrice || "");
-    setStopLoss(item.stopLoss || "");
-    setTarget(item.target || "");
-    setAccountSize(item.accountSize || "");
-    setRiskPerTrade(item.riskPerTrade || "2");
+    setEntryPrice(item.entryPrice ? item.entryPrice.toString() : (item.lastPrice ? item.lastPrice.toString() : ""));
+    setStopLoss(item.stopLoss ? item.stopLoss.toString() : "");
+    setTarget(item.target ? item.target.toString() : "");
+    setAccountSize(item.accountSize ? item.accountSize.toString() : "");
+    setRiskPerTrade(item.riskPerTrade ? item.riskPerTrade.toString() : "2");
     setOverrideReason(item.overrideReason || "");
     
-    // Load checklist items from item
-    const savedChecklist = {};
-    if (item.tradeType && SETUP_CONFIGS[item.tradeType]) {
-      const allChecklistItems = [
-        ...SETUP_CONFIGS[item.tradeType].checklists,
-        ...SETUP_CONFIGS[item.tradeType].newsValidation
-      ];
-      allChecklistItems.forEach(checkItem => {
-        if (item.notes && item.notes.includes(checkItem)) {
-          savedChecklist[checkItem] = true;
-        }
+    // Load previously saved checklist items or create new ones
+    if (item.checklistItems && Object.keys(item.checklistItems).length > 0) {
+      setChecklistItems(item.checklistItems);
+    } else if (item.tradeType && SETUP_CONFIGS[item.tradeType]) {
+      const newChecklist = {};
+      SETUP_CONFIGS[item.tradeType].checklists.forEach(checkItem => {
+        newChecklist[checkItem] = false;
       });
+      SETUP_CONFIGS[item.tradeType].newsValidation.forEach(checkItem => {
+        newChecklist[checkItem] = false;
+      });
+      setChecklistItems(newChecklist);
+    } else {
+      setChecklistItems({});
     }
-    setChecklistItems(savedChecklist);
     
     // Fetch current market price
     fetchCurrentMarketPrice(item.symbol);
