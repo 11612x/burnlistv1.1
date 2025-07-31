@@ -89,22 +89,23 @@ export function getSlicedData(data, timeframe, buyDate, symbol = "?", buyPrice =
   let timeframeStart;
   switch (normalizedTimeframe) {
     case "D":
-      // Use start of today (midnight) for daily calculations
-      timeframeStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      // Daily = past 24 hours
+      timeframeStart = new Date(now.getTime() - 24 * 60 * 60 * 1000);
       break;
     case "WEEK":
-      // Use exactly 7 days ago at the same time
+      // Weekly = past 7 days
       timeframeStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
       break;
     case "MONTH":
-      // Use exactly 31 days ago at the same time
-      timeframeStart = new Date(now.getTime() - 31 * 24 * 60 * 60 * 1000);
+      // Monthly = past 30 days
+      timeframeStart = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
       break;
     case "YEAR":
-      // Use exactly 365 days ago at the same time
+      // Yearly = past 365 days
       timeframeStart = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
       break;
     case "YTD":
+      // Year-to-date = from January 1 of current year
       timeframeStart = new Date(now.getFullYear(), 0, 1);
       break;
     case "MAX":
