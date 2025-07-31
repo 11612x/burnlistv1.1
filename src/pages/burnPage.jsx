@@ -259,85 +259,97 @@ const BurnPage = () => {
     }
 
     try {
-      console.log(`🔄 Refreshing price for ${ticker.symbol} at date ${ticker.buyDate}`);
+      console.log(`📊 Fetching fresh historical data for ${ticker.symbol} from buy date ${ticker.buyDate}`);
       
-      // Use existing historical data if available, otherwise fetch new data
-      let historicalData = ticker.historicalData || [];
+      // Always fetch fresh historical data from Twelve Data API for Max timeframe
+      // This ensures we get the most comprehensive data from the manual buy date to now
+      const buyDate = new Date(ticker.buyDate);
+      const endDate = null; // Use null to get data up to present
       
-      if (historicalData.length === 0) {
-        console.log(`📡 No existing historical data for ${ticker.symbol}, fetching from API...`);
-        const { fetchQuote } = await import('../data/finhubAdapter.js');
-        const freshData = await fetchQuote(ticker.symbol);
-        if (freshData && freshData.historicalData) {
-          historicalData = freshData.historicalData;
+      console.log(`📡 Fetching historical data from ${buyDate.toISOString()} for ${ticker.symbol}...`);
+      
+      // Use the same historical data fetching as the rest of the app
+      let freshHistoricalData = [];
+      try {
+        const response = await fetch(`http://localhost:3002/api/twelvedata-historical?symbol=${ticker.symbol}&start_date=${buyDate.toISOString()}&interval=1day`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.values && Array.isArray(data.values)) {
+            freshHistoricalData = data.values.map(item => ({
+              timestamp: item.datetime,
+              price: parseFloat(item.close),
+              open: parseFloat(item.open),
+              high: parseFloat(item.high), 
+              low: parseFloat(item.low),
+              volume: parseInt(item.volume)
+            }));
+            console.log(`📊 Fetched ${freshHistoricalData.length} historical data points for ${ticker.symbol}`);
+          }
         }
+      } catch (apiError) {
+        console.warn(`📡 Twelve Data API failed for ${ticker.symbol}, using existing data:`, apiError);
+        freshHistoricalData = ticker.historicalData || [];
       }
 
-      if (historicalData.length === 0) {
-        console.warn(`No historical data found for ${ticker.symbol}`);
+      // If API failed and no existing data, can't proceed
+      if (freshHistoricalData.length === 0) {
+        console.warn(`No historical data available for ${ticker.symbol}`);
+        setNotification(`No historical data found for ${ticker.symbol}`, 'error');
         return;
       }
 
-      // Find the price at the buy date
-      const buyDate = new Date(ticker.buyDate);
-      let historicalPrice = null;
-      let closestDate = null;
-      let minDiff = Infinity;
-
-      console.log(`🔍 Looking for price on ${buyDate.toISOString().split('T')[0]} for ${ticker.symbol}`);
-      console.log(`📊 Historical data points: ${historicalData.length}`);
-
-      // First try to find exact date match (using date part only)
-      for (const dataPoint of historicalData) {
-        const dataDate = new Date(dataPoint.timestamp);
-        const buyDateOnly = buyDate.toISOString().split('T')[0];
-        const dataDateOnly = dataDate.toISOString().split('T')[0];
+      // Sort data by timestamp (oldest to newest) to ensure consistent ordering
+      const sortedData = [...freshHistoricalData].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+      
+      // Find the earliest available price on or before the buy date
+      const buyDateTime = buyDate.getTime();
+      let bestPrice = null;
+      let bestDate = null;
+      
+      // Look for the earliest data point on or before the buy date
+      for (const dataPoint of sortedData) {
+        const dataDateTime = new Date(dataPoint.timestamp).getTime();
         
-        console.log(`🔍 Comparing: ${dataDateOnly} vs ${buyDateOnly}`);
-        
-        if (dataDateOnly === buyDateOnly) {
-          historicalPrice = dataPoint.price;
-          closestDate = dataPoint.timestamp;
-          console.log(`✅ Found exact date match for ${ticker.symbol}: ${historicalPrice} at ${closestDate}`);
+        if (dataDateTime <= buyDateTime) {
+          // This data point is on or before the buy date - use it
+          bestPrice = dataPoint.price;
+          bestDate = dataPoint.timestamp;
+          console.log(`📅 Found historical price for ${ticker.symbol}: $${bestPrice} on ${bestDate}`);
+        } else {
+          // Data point is after buy date - stop searching (since data is sorted)
           break;
         }
-        
-        // Track closest date if no exact match
-        const diff = Math.abs(dataDate.getTime() - buyDate.getTime());
-        if (diff < minDiff) {
-          minDiff = diff;
-          historicalPrice = dataPoint.price;
-          closestDate = dataPoint.timestamp;
-          console.log(`📌 Closest match so far: ${historicalPrice} at ${closestDate} (diff: ${diff}ms)`);
-        }
       }
-
-      if (historicalPrice === null) {
-        console.warn(`No historical price found for ${ticker.symbol} at ${ticker.buyDate}`);
+      
+      // If no data on or before buy date, use the earliest available data point
+      if (bestPrice === null && sortedData.length > 0) {
+        bestPrice = sortedData[0].price;
+        bestDate = sortedData[0].timestamp;
+        console.log(`⚠️ No data on buy date for ${ticker.symbol}, using earliest available: $${bestPrice} on ${bestDate}`);
+      }
+      
+      if (bestPrice === null) {
+        console.warn(`No valid price data found for ${ticker.symbol}`);
+        setNotification(`No valid price data found for ${ticker.symbol}`, 'error');
         return;
       }
 
-      // Log if we're using a closest match instead of exact match
-      const buyDateOnly = buyDate.toISOString().split('T')[0];
-      const closestDateOnly = new Date(closestDate).toISOString().split('T')[0];
-      
-      if (buyDateOnly !== closestDateOnly) {
-        console.log(`⚠️ No exact date match found for ${ticker.symbol}`);
-        console.log(`📅 Buy date: ${buyDateOnly}, Closest available: ${closestDateOnly}`);
-        console.log(`💰 Using closest price: ${historicalPrice} (from ${closestDate})`);
-      }
+      console.log(`📊 Updating ${ticker.symbol} buy price from $${ticker.buyPrice} to $${bestPrice} (date: ${bestDate})`);
 
-      console.log(`📊 Updating ${ticker.symbol} buy price from ${ticker.buyPrice} to ${historicalPrice} (date: ${closestDate})`);
-
-      // Update the ticker with the historical price (keep existing historical data)
+      // Update the ticker with the historical price and fresh historical data
       setWatchlist(prev => {
         if (!prev || !Array.isArray(prev.items)) return prev;
         const updatedItems = prev.items.map((item, i) => 
           i === index 
             ? { 
                 ...item, 
-                buyPrice: historicalPrice
-                // Keep existing historicalData - don't overwrite it
+                buyPrice: bestPrice,
+                historicalData: sortedData, // Update with fresh data
+                buyDateMetadata: {
+                  ...item.buyDateMetadata,
+                  manuallySet: true,
+                  lastRefreshed: new Date().toISOString()
+                }
               } 
             : item
         );
@@ -355,12 +367,11 @@ const BurnPage = () => {
         return updated;
       });
 
-      setNotification(`${ticker.symbol} buy price updated to ${historicalPrice.toFixed(2)}`);
-      setNotification(`Refreshed ${ticker.symbol} price`, 'success');
+      setNotification(`📊 ${ticker.symbol} buy price updated to $${bestPrice.toFixed(2)}`, 'success');
 
     } catch (error) {
       console.error(`Error refreshing ${ticker.symbol}:`, error);
-      setNotification(`Failed to refresh ${ticker.symbol}`, 'error');
+      setNotification(`Failed to refresh ${ticker.symbol}: ${error.message}`, 'error');
     }
   };
 
