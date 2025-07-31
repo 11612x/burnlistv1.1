@@ -13,7 +13,7 @@ const CRT_GREEN = 'rgb(140,185,162)';
 
 const TickerRow = ({
   item, index, editMode,
-  handleChangeSymbol, handleBuyPriceChange, handleBuyDateChange, handleDelete, handleRefreshPrice, items, changePercent, lookedUpBuyPrice
+  handleChangeSymbol, handleBuyPriceChange, handleBuyDateChange, handleDelete, handleRefreshPrice, items, changePercent, lookedUpBuyPrice, selectedTimeframe, displayPrice
 }) => {
   const green = useThemeColor(CRT_GREEN);
   const black = useThemeColor('black');

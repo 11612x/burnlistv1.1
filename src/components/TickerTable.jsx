@@ -109,7 +109,7 @@ const TickerTable = ({
                 minWidth: '60px',
               }
             }}>
-              Buy Price {renderSortArrow("buyPrice")}
+              {selectedTimeframe === 'MAX' ? 'Buy Price' : 'Start Price'} {renderSortArrow("buyPrice")}
             </th>
             <th style={{ 
               padding: '8px 4px', 
@@ -214,25 +214,45 @@ const TickerTable = ({
             return null;
           }
 
-          // Calculate timeframe-based return percentage (same as header)
+          // Calculate timeframe-based return percentage with proper Max vs non-Max logic
           const validBuyDate = item.buyDate && new Date(item.buyDate).toString() !== 'Invalid Date' ? item.buyDate : null;
-          console.log(`🔍 [TickerTable] Calling getSlicedData for ${item.symbol}:`, {
+          
+          // CRITICAL: Only use buyPrice for MAX timeframe, null for others
+          const effectiveBuyPriceForSlicing = selectedTimeframe === 'MAX' ? item.buyPrice : null;
+          
+          console.log(`🔍 [TickerTable] Processing ${item.symbol} for timeframe: ${selectedTimeframe}:`, {
             historicalDataLength: item.historicalData?.length,
             selectedTimeframe,
             validBuyDate,
-            buyPrice: item.buyPrice
+            usingBuyPrice: selectedTimeframe === 'MAX' ? item.buyPrice : 'timeframe-based'
           });
-          const { startPoint, endPoint } = getSlicedData(item.historicalData, selectedTimeframe, validBuyDate, item.symbol, item.buyPrice);
+          
+          const { startPoint, endPoint } = getSlicedData(item.historicalData, selectedTimeframe, validBuyDate, item.symbol, effectiveBuyPriceForSlicing);
           
           let changePercent = 0;
-          let lookedUpBuyPrice = item.buyPrice; // Default to original buy price
+          let displayPrice = 0; // Price to show in the "Buy Price" column
+          
+          // Determine what price to display based on timeframe
+          if (selectedTimeframe === 'MAX') {
+            displayPrice = item.buyPrice; // Show actual buy price for MAX
+          } else {
+            displayPrice = startPoint?.price || 0; // Show timeframe start price for others
+          }
           
           if (startPoint && typeof startPoint.price === "number" && startPoint.price > 0) {
             // Use currentPrice if available (from auto-fetch), otherwise use endPoint
-            const currentPrice = typeof item.currentPrice === 'number' ? item.currentPrice : (endPoint?.price || item.buyPrice);
+            // Get current price - NEVER use buyPrice as fallback
+            let currentPrice;
+            if (typeof item.currentPrice === 'number') {
+              currentPrice = item.currentPrice;
+            } else if (endPoint && typeof endPoint.price === 'number') {
+              currentPrice = endPoint.price;
+            } else {
+              console.warn(`⚠️ No valid current price found for ${item.symbol}, skipping calculation`);
+              return null; // Skip this ticker if no valid current price
+            }
             
             changePercent = ((currentPrice - startPoint.price) / startPoint.price) * 100;
-            lookedUpBuyPrice = startPoint.price; // Use the looked-up price
             console.log(`[Table %] ${item.symbol}: startPoint: ${startPoint.price}, currentPrice: ${currentPrice}, changePercent: ${changePercent}%`);
             console.log(`[Table Price] ${item.symbol}: lookedUpBuyPrice: ${lookedUpBuyPrice}`);
             console.log(`🔍 DEBUG ${item.symbol}: startPoint.price=${startPoint.price}, currentPrice=${currentPrice}, difference=${currentPrice - startPoint.price}, calculation=${((currentPrice - startPoint.price) / startPoint.price) * 100}`);
