@@ -119,24 +119,39 @@ export function getSlicedData(data, timeframe, buyDate, symbol = "?", buyPrice =
   let startDate;
   let startPrice;
   
+  // Sort data by timestamp first to ensure consistent ordering (oldest to newest)
+  const sortedData = [...data].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+  
   if (timeframe === 'MAX') {
-    // MAX timeframe: use buy date and buy price
-    startDate = buyDateObj;
-    startPrice = (buyPrice && !isNaN(buyPrice)) ? Number(buyPrice) : data[0]?.price || 0;
+    // MAX timeframe: always use the earliest available data point
+    startDate = new Date(sortedData[0]?.timestamp);
+    startPrice = Number(sortedData[0]?.price) || 0;
+    console.log(`📅 MAX: Using earliest available data for ${symbol} from ${startDate.toISOString()}: $${startPrice}`);
   } else {
-    // All other timeframes: use the LATER of buy date or timeframe start
-    // This ensures recently bought stocks show performance from their buy date
-    startDate = buyDateObj > timeframeStart ? buyDateObj : timeframeStart;
+    // All other timeframes: use earliest available price within the defined window
+    const timeframeStartTime = timeframeStart.getTime();
+    let earliestInWindow = null;
     
-    // Find the closest data point to the effective start date
-    const startIdx = binarySearchClosestIdx(data, startDate.getTime());
-    startPrice = data[startIdx]?.price || 0;
+    // Find the earliest data point within the timeframe window
+    for (const point of sortedData) {
+      const pointTime = new Date(point.timestamp).getTime();
+      if (pointTime >= timeframeStartTime) {
+        earliestInWindow = point;
+        break;
+      }
+    }
     
-    console.log(`🔍 TIMEFRAME DEBUG ${symbol}: timeframe=${timeframe}`);
-    console.log(`🔍 Buy date: ${buyDateObj.toISOString()}`);
-    console.log(`🔍 Timeframe start: ${timeframeStart?.toISOString() || 'now'}`);
-    console.log(`🔍 Effective start: ${startDate.toISOString()} (${startDate === buyDateObj ? 'using buy date' : 'using timeframe start'})`);
-    console.log(`🔍 Found price=${startPrice} at index=${startIdx}`);
+    if (earliestInWindow) {
+      // Use the earliest point within the timeframe window
+      startDate = new Date(earliestInWindow.timestamp);
+      startPrice = Number(earliestInWindow.price) || 0;
+      console.log(`📅 ${normalizedTimeframe}: Using earliest data within window for ${symbol} from ${startDate.toISOString()}: $${startPrice}`);
+    } else {
+      // No data within timeframe window, use the earliest available data overall
+      startDate = new Date(sortedData[0]?.timestamp);
+      startPrice = Number(sortedData[0]?.price) || 0;
+      console.log(`📅 ${normalizedTimeframe}: No data in window, using earliest available for ${symbol} from ${startDate.toISOString()}: $${startPrice}`);
+    }
   }
   
   // --- Binary search for startPoint ---
